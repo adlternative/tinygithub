@@ -1,0 +1,4 @@
+{
+  "log-level": "debug",
+  "log-file": "/tmp/tinygithub.log"
+}

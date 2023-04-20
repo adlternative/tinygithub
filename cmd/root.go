@@ -6,8 +6,14 @@ package cmd
 import (
 	"os"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+
+	"github.com/adlternative/tinygithub/pkg/config"
 )
+
+var configFile string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -26,13 +32,25 @@ func Execute() {
 }
 
 func init() {
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.tinygithub.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.PersistentFlags().String(config.LogLevel, "info", "log level")
+	rootCmd.PersistentFlags().String(config.LogFile, "", "log file")
+	rootCmd.PersistentFlags().StringVar(&configFile, "config", "config.json", "config file")
+
+	if err := viper.BindPFlags(rootCmd.PersistentFlags()); err != nil {
+		log.Fatalf("viper bind flags failed with %v", err)
+	}
+
+	cobra.OnInitialize(initConfig)
+}
+
+func initConfig() {
+	viper.SetConfigFile(configFile)
+	viper.AutomaticEnv()
+
+	if err := viper.ReadInConfig(); err != nil {
+		log.Fatalf("read config failed with %v", err)
+	}
+
+	config.InitLog()
 }
