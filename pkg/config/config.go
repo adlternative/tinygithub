@@ -9,6 +9,7 @@ import (
 const (
 	LogLevel = "log-level"
 	LogFile  = "log-file"
+	Storage  = "storage"
 )
 
 func InitLog() {

@@ -1,4 +1,5 @@
 {
   "log-level": "debug",
-  "log-file": "/tmp/tinygithub.log"
+  "log-file": "/tmp/tinygithub.log",
+  "storage": "/home/adl/test/tinygithub/repositories"
 }
