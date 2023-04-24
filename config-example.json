@@ -1,5 +1,6 @@
 {
   "log-level": "debug",
   "log-file": "/tmp/tinygithub.log",
-  "storage": "/home/adl/test/tinygithub/repositories"
+  "storage": "/home/adl/test/tinygithub/repositories",
+  "git-bin-path": "/home/adl/git-dev/bin-wrappers/git"
 }

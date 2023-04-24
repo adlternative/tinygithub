@@ -3,7 +3,9 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/adlternative/tinygithub/pkg/config"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"io"
 	"os/exec"
 )
@@ -71,7 +73,12 @@ func (c *Command) Start(ctx context.Context) error {
 	trueArgs = append(trueArgs, c.options...)
 	trueArgs = append(trueArgs, c.args...)
 
-	c.cmd = exec.CommandContext(ctx, "git", trueArgs...)
+	gitBinPath := viper.GetString(config.GitBinPath)
+	if gitBinPath == "" {
+		gitBinPath = "git"
+	}
+
+	c.cmd = exec.CommandContext(ctx, gitBinPath, trueArgs...)
 
 	if c.stdout != nil {
 		c.cmd.Stdout = c.stdout
