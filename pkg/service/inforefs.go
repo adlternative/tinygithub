@@ -34,7 +34,7 @@ func InfoRefs(c *gin.Context, storage *storage.Storage, userName, repoName strin
 	// git -c <repoPath> receive-pack --advertise-refs --stateless-rpc <repoPath>
 
 	gitCmd := cmd.NewGitCommand(serviceName).WithGitDir(repo.Path()).
-		WithOptions("--advertise-refs", "--stateless-rpc").
+		WithOptions("--advertise-refs", "--stateless-rpc", "--show-service").
 		WithArgs(repo.Path()).WithStderr(&stderrBuf).WithStdout(c.Writer)
 
 	if protocol := c.GetHeader("Git-Protocol"); protocol != "" {
