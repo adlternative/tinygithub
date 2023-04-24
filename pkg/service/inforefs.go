@@ -9,7 +9,10 @@ import (
 	"strings"
 )
 
-func InfoRefs(c *gin.Context, storage *storage.Storage, userName, repoName, serviceName string) error {
+func InfoRefs(c *gin.Context, storage *storage.Storage, userName, repoName string) error {
+	// check repo exist
+	serviceName := c.Query("service")
+
 	c.Writer.Header().Set("Content-Type", fmt.Sprintf("application/x-%s-advertisement", serviceName))
 	c.Writer.Header().Set("Cache-Control", "no-cache")
 

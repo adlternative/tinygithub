@@ -34,10 +34,8 @@ func Run(store *storage.Storage) error {
 		userName := c.Param("username")
 		// check user exist
 		repoName := c.Param("reponame")
-		// check repo exist
-		serviceName := c.Query("service")
 
-		err := service.InfoRefs(c, store, userName, repoName, serviceName)
+		err := service.InfoRefs(c, store, userName, repoName)
 		if err != nil {
 			log.WithError(err).Errorf("info refs failed")
 			c.String(http.StatusInternalServerError, "get info refs failed with %s", err)
