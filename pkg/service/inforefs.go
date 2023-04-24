@@ -2,10 +2,9 @@ package service
 
 import (
 	"fmt"
+	"github.com/adlternative/tinygithub/pkg/cmd"
 	"github.com/adlternative/tinygithub/pkg/storage"
 	"github.com/gin-gonic/gin"
-	log "github.com/sirupsen/logrus"
-	"os/exec"
 	"strings"
 )
 
@@ -33,20 +32,19 @@ func InfoRefs(c *gin.Context, storage *storage.Storage, userName, repoName strin
 	var stderrBuf strings.Builder
 	// git -c <repoPath> upload-pack --advertise-refs --stateless-rpc <repoPath>
 	// git -c <repoPath> receive-pack --advertise-refs --stateless-rpc <repoPath>
-	command := exec.CommandContext(c, "git", fmt.Sprintf("--git-dir=%s", repo.Path()), serviceName, "--advertise-refs", "--stateless-rpc", repo.Path())
-	command.Stdout = c.Writer
-	command.Stderr = &stderrBuf
+
+	gitCmd := cmd.NewGitCommand(serviceName).WithGitDir(repo.Path()).
+		WithOptions("--advertise-refs", "--stateless-rpc").
+		WithArgs(repo.Path()).WithStderr(&stderrBuf).WithStdout(c.Writer)
 
 	if protocol := c.GetHeader("Git-Protocol"); protocol != "" {
 		version := strings.TrimPrefix(protocol, "version=")
 		if version == "2" || version == "1" {
-			command.Env = append(command.Env, fmt.Sprintf("GIT_PROTOCOL=version=%s", version))
+			gitCmd.WithEnv(fmt.Sprintf("GIT_PROTOCOL=version=%s", version))
 		}
 	}
 
-	log.Debug("git command: ", command.String())
-
-	if err = command.Run(); err != nil {
+	if err = gitCmd.Run(c); err != nil {
 		return fmt.Errorf("git command failed with: err:%w, stderr:%v", err, stderrBuf.String())
 	}
 

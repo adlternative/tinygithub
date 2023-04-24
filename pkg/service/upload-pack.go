@@ -3,9 +3,8 @@ package service
 import (
 	"compress/gzip"
 	"fmt"
-	log "github.com/sirupsen/logrus"
+	"github.com/adlternative/tinygithub/pkg/cmd"
 	"io"
-	"os/exec"
 	"strings"
 
 	"github.com/adlternative/tinygithub/pkg/storage"
@@ -37,21 +36,19 @@ func UploadPack(c *gin.Context, storage *storage.Storage, userName, repoName str
 
 	var stderrBuf strings.Builder
 	// git -c <repoPath> upload-pack --stateless-rpc <repoPath>
-	command := exec.CommandContext(c, "git", fmt.Sprintf("--git-dir=%s", repo.Path()), serviceName, "--stateless-rpc", repo.Path())
-	command.Stdin = r
-	command.Stdout = c.Writer
-	command.Stderr = &stderrBuf
+
+	gitCmd := cmd.NewGitCommand(serviceName).WithGitDir(repo.Path()).
+		WithOptions("--stateless-rpc").
+		WithArgs(repo.Path()).WithStderr(&stderrBuf).WithStdout(c.Writer).WithStdin(r)
 
 	if protocol := c.GetHeader("Git-Protocol"); protocol != "" {
 		version := strings.TrimPrefix(protocol, "version=")
 		if version == "2" || version == "1" {
-			command.Env = append(command.Env, fmt.Sprintf("GIT_PROTOCOL=version=%s", version))
+			gitCmd.WithEnv(fmt.Sprintf("GIT_PROTOCOL=version=%s", version))
 		}
 	}
 
-	log.Debug("git command: ", command.String())
-
-	if err = command.Run(); err != nil {
+	if err = gitCmd.Run(c); err != nil {
 		return fmt.Errorf("git command failed with: err:%w, stderr:%v", err, stderrBuf.String())
 	}
 
