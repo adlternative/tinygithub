@@ -25,3 +25,9 @@ CodeGPT.git  git.git
 ```shell
 git clone http://127.0.0.1:8080/adlternative/git.git
 ```
+
+6. push git repo via http protocol
+```shell
+#edit something...
+git push origin main
+```

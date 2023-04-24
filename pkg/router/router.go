@@ -54,7 +54,18 @@ func Run(store *storage.Storage) error {
 			return
 		}
 	})
-
+	r.POST("/:username/:reponame/git-receive-pack", func(c *gin.Context) {
+		userName := c.Param("username")
+		// check user exist
+		repoName := c.Param("reponame")
+		// check repo exist
+		err := service.ReceivePack(c, store, userName, repoName)
+		if err != nil {
+			log.WithError(err).Errorf("receive-pack failed")
+			c.String(http.StatusInternalServerError, "receive-pack failed with %s", err)
+			return
+		}
+	})
 	err := r.SetTrustedProxies([]string{"127.0.0.1"})
 	if err != nil {
 		return err
