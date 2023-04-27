@@ -38,6 +38,7 @@ func init() {
 	rootCmd.PersistentFlags().String(config.DBName, "", "database name")
 	rootCmd.PersistentFlags().String(config.ServerIp, "127.0.0.1", "server ip")
 	rootCmd.PersistentFlags().String(config.ServerPort, "8080", "server port")
+	rootCmd.PersistentFlags().String(config.SessionSecret, "", "session secret")
 
 	if err := viper.BindPFlags(serverCmd.PersistentFlags()); err != nil {
 		log.Fatalf("viper bind serverCmd flags failed with %v", err)

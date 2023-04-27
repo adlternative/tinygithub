@@ -30,9 +30,14 @@ func Logger() gin.HandlerFunc {
 func Run(store *storage.Storage, dbEngine *model.DBEngine) error {
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.New()
-	r.Use(Logger(),
-		gin.Recovery(),
-		sessions.Sessions("tinygithub-session", cookie.NewStore([]byte("secret"))))
+
+	sessionSecret := viper.GetString(config.SessionSecret)
+	if sessionSecret == "" {
+		return fmt.Errorf("empty session secret")
+	}
+	sessionMiddleWare := sessions.Sessions("tinygithub-session", cookie.NewStore([]byte(sessionSecret)))
+
+	r.Use(Logger(), gin.Recovery(), sessionMiddleWare)
 	r.LoadHTMLGlob("pkg/template/*")
 
 	r.GET("/", home.Page)

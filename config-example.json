@@ -11,5 +11,7 @@
   "db-name": "tinygithub",
 
   "server-ip": "127.0.0.1",
-  "server-port": "8080"
+  "server-port": "8080",
+
+  "session-secret": "secret"
 }

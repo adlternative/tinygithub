@@ -20,6 +20,8 @@ const (
 
 	ServerIp   = "server-ip"
 	ServerPort = "server-port"
+
+	SessionSecret = "session-secret"
 )
 
 func InitLog() {
