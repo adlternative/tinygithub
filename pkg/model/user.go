@@ -9,4 +9,6 @@ type User struct {
 
 	Name  string `gorm:"uniqueIndex;not null" form:"username" binding:"required"`
 	Email string `gorm:"uniqueIndex;not null" form:"email" binding:"required"`
+
+	Repositories []Repository
 }

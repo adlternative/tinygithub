@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Repository</title>
+</head>
+<body>
+<h1>Create Repository</h1>
+{{ if .Error }}
+<p style="color: red;">{{ .Error }}</p>
+{{ end }}
+<form method="POST" action="/repos/new">
+    <label for="reponame">Name:</label>
+    <input type="text" id="reponame" name="reponame" required><br><br>
+    <label for="description">Description:</label>
+    <textarea id="description" name="description"></textarea><br><br>
+    <input type="submit" value="Create">
+</form>
+</body>
+</html>

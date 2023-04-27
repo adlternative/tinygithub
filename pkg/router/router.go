@@ -5,6 +5,7 @@ import (
 	"github.com/adlternative/tinygithub/pkg/service"
 	"github.com/adlternative/tinygithub/pkg/service/auth"
 	"github.com/adlternative/tinygithub/pkg/service/home"
+	"github.com/adlternative/tinygithub/pkg/service/repo"
 	"github.com/adlternative/tinygithub/pkg/service/user"
 	"github.com/adlternative/tinygithub/pkg/storage"
 	"github.com/gin-contrib/sessions"
@@ -35,6 +36,7 @@ func Run(store *storage.Storage, dbEngine *model.DBEngine) error {
 
 	gitRepoGroup := r.Group("/:username/:reponame")
 	{
+		gitRepoGroup.GET("", repo.Home(dbEngine, store))
 		gitRepoGroup.GET("/info/refs", service.InfoRefs(store))
 		gitRepoGroup.POST("/git-upload-pack", service.UploadPack(store))
 		gitRepoGroup.POST("/git-receive-pack", service.ReceivePack(store))
@@ -58,6 +60,13 @@ func Run(store *storage.Storage, dbEngine *model.DBEngine) error {
 		}
 
 		authGroup.GET("/logout", auth.Logout)
+	}
+
+	repoGroup := r.Group("/repos")
+	{
+		repoGroup.GET("/new", repo.CreatePage)
+		repoGroup.POST("/new", repo.Create(dbEngine))
+		//repoGroup.Get("/:id", repo.Get(dbEngine))
 	}
 
 	err := r.SetTrustedProxies([]string{"127.0.0.1"})

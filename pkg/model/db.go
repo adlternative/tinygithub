@@ -22,8 +22,10 @@ func NewDBEngine() *DBEngine {
 }
 
 func (db *DBEngine) init() error {
-	if !db.Migrator().HasTable(&User{}) || !db.Migrator().HasTable(&Password{}) {
-		return db.AutoMigrate(&User{}, &Password{})
+	migrator := db.Migrator()
+
+	if !migrator.HasTable(&User{}) || !migrator.HasTable(&Password{}) || !migrator.HasTable(&Repository{}) {
+		return db.AutoMigrate(&User{}, &Password{}, &Repository{})
 	}
 	return nil
 }
