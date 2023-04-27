@@ -2,10 +2,12 @@ package repo
 
 import (
 	"fmt"
+	"github.com/adlternative/tinygithub/pkg/config"
 	"github.com/adlternative/tinygithub/pkg/model"
 	"github.com/adlternative/tinygithub/pkg/storage"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
 	"gorm.io/gorm"
 	"net/http"
 )
@@ -54,7 +56,7 @@ func Home(db *model.DBEngine, store *storage.Storage) gin.HandlerFunc {
 			"Name":        user.Repositories[0].Name,
 			"Description": user.Repositories[0].Desc,
 			"Owner":       userName,
-			"DownloadURL": fmt.Sprintf("http://127.0.0.1:8080/%s/%s.git", userName, repoName),
+			"DownloadURL": fmt.Sprintf("http://%s:%s/%s/%s.git", viper.GetString(config.ServerIp), viper.GetString(config.ServerPort), userName, repoName),
 		})
 
 		// 1.

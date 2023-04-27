@@ -17,6 +17,9 @@ const (
 	DBIp       = "db-ip"
 	DBPort     = "db-port"
 	DBName     = "db-name"
+
+	ServerIp   = "server-ip"
+	ServerPort = "server-port"
 )
 
 func InitLog() {

@@ -1,6 +1,8 @@
 package router
 
 import (
+	"fmt"
+	"github.com/adlternative/tinygithub/pkg/config"
 	"github.com/adlternative/tinygithub/pkg/model"
 	"github.com/adlternative/tinygithub/pkg/service/auth"
 	"github.com/adlternative/tinygithub/pkg/service/home"
@@ -12,6 +14,7 @@ import (
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 func Logger() gin.HandlerFunc {
@@ -74,7 +77,7 @@ func Run(store *storage.Storage, dbEngine *model.DBEngine) error {
 		return err
 	}
 
-	if err = r.Run(); err != nil {
+	if err = r.Run(fmt.Sprintf("%s:%s", viper.GetString(config.ServerIp), viper.GetString(config.ServerPort))); err != nil {
 		return err
 	}
 	return nil
