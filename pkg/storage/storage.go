@@ -1,9 +1,15 @@
 package storage
 
 import (
+	"errors"
 	"fmt"
+	"github.com/adlternative/tinygithub/pkg/cmd"
+	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
+	"io/fs"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/adlternative/tinygithub/pkg/config"
 	"github.com/spf13/viper"
@@ -52,4 +58,50 @@ func (s *Storage) valid() error {
 		return fmt.Errorf("storage path not dir: %s", s.path)
 	}
 	return nil
+}
+
+func (s *Storage) CreateRepository(ctx *gin.Context, userName, repoName string) (*Repository, error) {
+	userDir := path.Clean(path.Join(s.path, userName))
+	repoPath := path.Clean(path.Join(userDir, repoName+".git"))
+
+	var pathErr *fs.PathError
+	_, err := os.Stat(repoPath)
+	if err == nil {
+		return nil, fmt.Errorf("repo %s exists", repoPath)
+	} else if err != os.ErrNotExist && !errors.As(err, &pathErr) {
+		return nil, fmt.Errorf("repo %s stat failed: %w", repoPath, err)
+	}
+
+	err = os.MkdirAll(userDir, 0750)
+	if err != nil {
+		return nil, fmt.Errorf("mkdir user dir %s failed", userDir)
+	}
+	var stderrBuf strings.Builder
+
+	gitCmd := cmd.NewGitCommand("init").WithGitDir(repoPath).
+		WithOptions("--bare").WithStderr(&stderrBuf)
+	err = gitCmd.Run(ctx)
+	if err != nil {
+		log.WithError(err).Errorf("git command failed with: err:%v, stderr:%v", err, stderrBuf.String())
+		return nil, err
+	}
+
+	return NewRepository(repoPath), nil
+}
+
+func (s *Storage) RemoveRepository(ctx *gin.Context, userName, repoName string) error {
+	userDir := path.Clean(path.Join(s.path, userName))
+	repoPath := path.Clean(path.Join(userDir, repoName+".git"))
+
+	var pathErr *fs.PathError
+	_, err := os.Stat(repoPath)
+	if err != nil {
+		if err == os.ErrNotExist || errors.As(err, &pathErr) {
+			return nil
+		}
+		return err
+	}
+
+	err = os.RemoveAll(repoPath)
+	return err
 }

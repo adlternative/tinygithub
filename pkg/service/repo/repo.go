@@ -4,8 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"github.com/adlternative/tinygithub/pkg/model"
+	"github.com/adlternative/tinygithub/pkg/storage"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"net/http"
 )
@@ -20,7 +22,7 @@ func CreatePage(c *gin.Context) {
 	c.HTML(http.StatusOK, "create_repo.html", nil)
 }
 
-func Create(db *model.DBEngine) gin.HandlerFunc {
+func Create(db *model.DBEngine, store *storage.Storage) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		session := sessions.Default(c)
 		sessionUserName := session.Get("username").(string)
@@ -48,18 +50,45 @@ func Create(db *model.DBEngine) gin.HandlerFunc {
 		}
 
 		// git init
-		if err := tx.Create(&model.Repository{
+		_, err := store.CreateRepository(c, sessionUserName, repoName)
+		if err != nil {
+			tx.Rollback()
+
+			err2 := store.RemoveRepository(c, sessionUserName, repoName)
+			if err2 != nil {
+				log.WithError(err2).Errorf("repo create rollback failed")
+			}
+			log.WithError(err).Errorf("store CreateRepository failed")
+			c.HTML(http.StatusInternalServerError, "500.html", gin.H{"error": err.Error()})
+			return
+		}
+
+		if err = tx.Create(&model.Repository{
 			UserID: sessionUserID,
 			Name:   repoName,
 			Desc:   description,
 		}).Error; err != nil {
 			tx.Rollback()
+
+			err2 := store.RemoveRepository(c, sessionUserName, repoName)
+			if err2 != nil {
+				log.WithError(err2).Errorf("repo create rollback failed")
+			}
+
+			log.WithError(err).Errorf("db CreateRepository failed")
 			c.HTML(http.StatusInternalServerError, "500.html", gin.H{"error": err.Error()})
 			return
 		}
 
-		if err := tx.Commit().Error; err != nil {
+		if err = tx.Commit().Error; err != nil {
 			tx.Rollback()
+
+			err2 := store.RemoveRepository(c, sessionUserName, repoName)
+			if err2 != nil {
+				log.WithError(err2).Errorf("repo create rollback failed")
+			}
+
+			log.WithError(err).Errorf("txn commit failed")
 			c.HTML(http.StatusInternalServerError, "500.html", gin.H{"error": err.Error()})
 			return
 		}

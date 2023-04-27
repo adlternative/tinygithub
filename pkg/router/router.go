@@ -65,7 +65,7 @@ func Run(store *storage.Storage, dbEngine *model.DBEngine) error {
 	repoGroup := r.Group("/repos")
 	{
 		repoGroup.GET("/new", repo.CreatePage)
-		repoGroup.POST("/new", repo.Create(dbEngine))
+		repoGroup.POST("/new", repo.Create(dbEngine, store))
 		//repoGroup.Get("/:id", repo.Get(dbEngine))
 	}
 

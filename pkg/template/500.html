@@ -45,6 +45,9 @@
 <body>
 <div class="container">
     <h1>500 Internal Server Error</h1>
+    {{ if .error }}
+    <p style="color: red">{{ .error }}</p>
+    {{ end }}
     <p>Oops, something went wrong. Our engineers have been notified and are working on a solution.</p>
     <p>You can try <a href="/">going back to the homepage</a>, or contact us if you need further assistance.</p>
 </div>
