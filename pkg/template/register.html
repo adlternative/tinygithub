@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Register</title>
+</head>
+<body>
+<h1>Register</h1>
+{{ if .error }}
+<p style="color: red">{{ .error }}</p>
+{{ end }}
+<form method="post" action="/user/register">
+    <p>
+        <label>Username:</label>
+        <input type="text" name="username" required>
+    </p>
+    <p>
+        <label>Email:</label>
+        <input type="email" name="email" required>
+    </p>
+    <p>
+        <label>Password:</label>
+        <input type="password" name="password" required>
+    </p>
+    <p>
+        <button type="submit">Register</button>
+    </p>
+</form>
+<ul>
+    <li><a href="/user/login">Login</a></li>
+</ul>
+</body>
+</html>

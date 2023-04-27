@@ -25,5 +25,5 @@ func Run() error {
 		return err
 	}
 
-	return router.Run(store)
+	return router.Run(store, dbEngine)
 }
