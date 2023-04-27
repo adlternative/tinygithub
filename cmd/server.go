@@ -31,6 +31,11 @@ func init() {
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
 	serverCmd.PersistentFlags().String(config.Storage, "", "git repositories storage path")
+	rootCmd.PersistentFlags().String(config.DBUser, "", "database user")
+	rootCmd.PersistentFlags().String(config.DBPassword, "", "database password")
+	rootCmd.PersistentFlags().String(config.DBIp, "", "database Ip")
+	rootCmd.PersistentFlags().String(config.DBPort, "", "database port")
+	rootCmd.PersistentFlags().String(config.DBName, "", "database name")
 
 	if err := viper.BindPFlags(serverCmd.PersistentFlags()); err != nil {
 		log.Fatalf("viper bind serverCmd flags failed with %v", err)

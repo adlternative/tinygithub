@@ -2,5 +2,11 @@
   "log-level": "debug",
   "log-file": "/tmp/tinygithub.log",
   "storage": "/home/adl/test/tinygithub/repositories",
-  "git-bin-path": "/home/adl/git-dev/bin-wrappers/git"
+  "git-bin-path": "/home/adl/git-dev/bin-wrappers/git",
+
+  "db-user": "adl",
+  "db-password": "123456",
+  "db-ip": "127.0.0.1",
+  "db-port": "3306",
+  "db-name": "tinygithub"
 }

@@ -11,6 +11,12 @@ const (
 	LogFile    = "log-file"
 	Storage    = "storage"
 	GitBinPath = "git-bin-path"
+
+	DBUser     = "db-user"
+	DBPassword = "db-password"
+	DBIp       = "db-ip"
+	DBPort     = "db-port"
+	DBName     = "db-name"
 )
 
 func InitLog() {
