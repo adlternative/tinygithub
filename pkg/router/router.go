@@ -30,42 +30,14 @@ func Run(store *storage.Storage) error {
 	r.GET("/test", func(c *gin.Context) {
 		c.String(http.StatusOK, "Test TinyGithub!")
 	})
-	r.GET("/:username/:reponame/info/refs", func(c *gin.Context) {
-		userName := c.Param("username")
-		// check user exist
-		repoName := c.Param("reponame")
 
-		err := service.InfoRefs(c, store, userName, repoName)
-		if err != nil {
-			log.WithError(err).Errorf("info refs failed")
-			c.String(http.StatusInternalServerError, "get info refs failed with %s", err)
-			return
-		}
-	})
-	r.POST("/:username/:reponame/git-upload-pack", func(c *gin.Context) {
-		userName := c.Param("username")
-		// check user exist
-		repoName := c.Param("reponame")
-		// check repo exist
-		err := service.UploadPack(c, store, userName, repoName)
-		if err != nil {
-			log.WithError(err).Errorf("upload-pack failed")
-			c.String(http.StatusInternalServerError, "upload-pack failed with %s", err)
-			return
-		}
-	})
-	r.POST("/:username/:reponame/git-receive-pack", func(c *gin.Context) {
-		userName := c.Param("username")
-		// check user exist
-		repoName := c.Param("reponame")
-		// check repo exist
-		err := service.ReceivePack(c, store, userName, repoName)
-		if err != nil {
-			log.WithError(err).Errorf("receive-pack failed")
-			c.String(http.StatusInternalServerError, "receive-pack failed with %s", err)
-			return
-		}
-	})
+	gitRepoGroup := r.Group("/:username/:reponame")
+	{
+		gitRepoGroup.GET("/info/refs", service.InfoRefs(store))
+		gitRepoGroup.POST("/git-upload-pack", service.UploadPack(store))
+		gitRepoGroup.POST("/git-receive-pack", service.ReceivePack(store))
+	}
+
 	err := r.SetTrustedProxies([]string{"127.0.0.1"})
 	if err != nil {
 		return err
