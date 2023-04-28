@@ -1,15 +1,15 @@
 package storage
 
-type Repository struct {
+type Repo struct {
 	path string
 }
 
-func (r *Repository) Path() string {
+func (r *Repo) Path() string {
 	return r.path
 }
 
-func NewRepository(path string) *Repository {
-	return &Repository{
+func NewRepository(path string) *Repo {
+	return &Repo{
 		path: path,
 	}
 }

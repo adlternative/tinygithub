@@ -33,7 +33,7 @@ func (s *Storage) Path() string {
 	return s.path
 }
 
-func (s *Storage) GetRepository(userName, repoName string) (*Repository, error) {
+func (s *Storage) GetRepository(userName, repoName string) (*Repo, error) {
 	repoPath := path.Clean(path.Join(s.path, userName, repoName))
 	info, err := os.Stat(repoPath)
 	if err != nil {
@@ -60,7 +60,7 @@ func (s *Storage) valid() error {
 	return nil
 }
 
-func (s *Storage) CreateRepository(ctx *gin.Context, userName, repoName string) (*Repository, error) {
+func (s *Storage) CreateRepository(ctx *gin.Context, userName, repoName string) (*Repo, error) {
 	userDir := path.Clean(path.Join(s.path, userName))
 	repoPath := path.Clean(path.Join(userDir, repoName+".git"))
 
