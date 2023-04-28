@@ -53,7 +53,7 @@ func Home(db *model.DBEngine, store *storage.Storage) gin.HandlerFunc {
 		}
 
 		c.HTML(http.StatusOK, "repo.html", gin.H{
-			"Name":        user.Repositories[0].Name,
+			"RepoName":    user.Repositories[0].Name,
 			"Description": user.Repositories[0].Desc,
 			"Owner":       userName,
 			"DownloadURL": fmt.Sprintf("http://%s:%s/%s/%s.git", viper.GetString(config.ServerIp), viper.GetString(config.ServerPort), userName, repoName),

@@ -4,10 +4,37 @@
     <title>Repository Details</title>
 </head>
 <body>
-<h1>Repository Details</h1>
-<p><strong>Name:</strong> {{ .Name }}</p>
-<p><strong>Owner:</strong> {{ .Owner }}</p>
-<p><strong>Download URL:</strong> {{ .DownloadURL }}</p>
-<p><strong>Description:</strong> {{ .Description }}</p>
+<h1>{{.Owner}}/{{.RepoName}}</h1>
+<p>About: {{ .Description }}</p>
+<hr>
+<div style="display: flex; align-items: center">
+    <div style="position: relative">
+        <button id="code-button">Code</button>
+        <div id="url-dropdown" style="display: none; position: absolute; top: 100%; left: 0">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 5px">
+                <span style="max-width: 400px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ .DownloadURL }}</span>
+                <button id="copy-button">Copy</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    const downloadURL = "{{ .DownloadURL }}";
+    const codeButton = document.getElementById("code-button");
+    const urlDropdown = document.getElementById("url-dropdown");
+    const copyButton = document.getElementById("copy-button");
+    codeButton.addEventListener("click", () => {
+        urlDropdown.style.display = urlDropdown.style.display === "none" ? "block" : "none";
+    });
+    copyButton.addEventListener("click", () => {
+        navigator.clipboard.writeText(downloadURL);
+        alert("Download link copied to clipboard.");
+    });
+    document.addEventListener("click", (event) => {
+        if (!event.target.closest("#url-dropdown") && !event.target.closest("#code-button")) {
+            urlDropdown.style.display = "none";
+        }
+    });
+</script>
 </body>
 </html>
