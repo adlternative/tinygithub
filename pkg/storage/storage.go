@@ -34,6 +34,9 @@ func (s *Storage) Path() string {
 }
 
 func (s *Storage) GetRepository(userName, repoName string) (*Repo, error) {
+	if !strings.HasSuffix(repoName, ".git") {
+		repoName = repoName + ".git"
+	}
 	repoPath := path.Clean(path.Join(s.path, userName, repoName))
 	info, err := os.Stat(repoPath)
 	if err != nil {
@@ -61,8 +64,11 @@ func (s *Storage) valid() error {
 }
 
 func (s *Storage) CreateRepository(ctx *gin.Context, userName, repoName string) (*Repo, error) {
+	if !strings.HasSuffix(repoName, ".git") {
+		repoName = repoName + ".git"
+	}
 	userDir := path.Clean(path.Join(s.path, userName))
-	repoPath := path.Clean(path.Join(userDir, repoName+".git"))
+	repoPath := path.Clean(path.Join(userDir, repoName))
 
 	var pathErr *fs.PathError
 	_, err := os.Stat(repoPath)
@@ -90,8 +96,11 @@ func (s *Storage) CreateRepository(ctx *gin.Context, userName, repoName string) 
 }
 
 func (s *Storage) RemoveRepository(ctx *gin.Context, userName, repoName string) error {
+	if !strings.HasSuffix(repoName, ".git") {
+		repoName = repoName + ".git"
+	}
 	userDir := path.Clean(path.Join(s.path, userName))
-	repoPath := path.Clean(path.Join(userDir, repoName+".git"))
+	repoPath := path.Clean(path.Join(userDir, repoName))
 
 	var pathErr *fs.PathError
 	_, err := os.Stat(repoPath)

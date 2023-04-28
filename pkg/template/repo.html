@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Repository Details</title>
+    <title>{{.Owner}}/{{.RepoName}}</title>
 </head>
 <body>
 <h1>{{.Owner}}/{{.RepoName}}</h1>
@@ -36,5 +36,6 @@
         }
     });
 </script>
+{{template "tree.tmpl" .TreeEntries }}
 </body>
 </html>

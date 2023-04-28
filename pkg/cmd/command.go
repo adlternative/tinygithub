@@ -22,6 +22,17 @@ type Command struct {
 	stdout io.Writer
 	stdin  io.Reader
 	stderr io.Writer
+
+	// if no stdout
+	internalStdout io.ReadCloser
+	// if no stdin
+	internalStdin io.WriteCloser
+	// if no stderr
+	internalStderr io.ReadCloser
+}
+
+func (c *Command) Read(p []byte) (n int, err error) {
+	return c.internalStdout.Read(p)
 }
 
 func NewGitCommand(subCmd string) *Command {
@@ -82,12 +93,30 @@ func (c *Command) Start(ctx context.Context) error {
 
 	if c.stdout != nil {
 		c.cmd.Stdout = c.stdout
+	} else {
+		stdoutPipe, err := c.cmd.StdoutPipe()
+		if err != nil {
+			return err
+		}
+		c.internalStdout = stdoutPipe
 	}
 	if c.stderr != nil {
 		c.cmd.Stderr = c.stderr
+	} else {
+		stderrPipe, err := c.cmd.StderrPipe()
+		if err != nil {
+			return err
+		}
+		c.internalStderr = stderrPipe
 	}
 	if c.stdin != nil {
 		c.cmd.Stdin = c.stdin
+	} else {
+		stdinPipe, err := c.cmd.StdinPipe()
+		if err != nil {
+			return err
+		}
+		c.internalStdin = stdinPipe
 	}
 	if len(c.envs) > 0 {
 		c.cmd.Env = append(c.cmd.Env, c.envs...)
@@ -103,6 +132,29 @@ func (c *Command) Start(ctx context.Context) error {
 }
 
 func (c *Command) Wait() error {
+	if c.internalStdin != nil {
+		err := c.internalStdin.Close()
+		if err != nil {
+			return err
+		}
+	}
+	if c.internalStdout != nil {
+		_, _ = io.Copy(io.Discard, c.internalStdout)
+
+		err := c.internalStdout.Close()
+		if err != nil {
+			return err
+		}
+	}
+	if c.internalStderr != nil {
+		_, _ = io.Copy(io.Discard, c.internalStderr)
+
+		err := c.internalStderr.Close()
+		if err != nil {
+			return err
+		}
+	}
+
 	err := c.cmd.Wait()
 	if err != nil {
 		return err
