@@ -39,6 +39,7 @@ func Run(store *storage.Storage, dbEngine *model.DBEngine) error {
 
 	r.Use(Logger(), gin.Recovery(), sessionMiddleWare)
 	r.LoadHTMLGlob("pkg/template/*")
+	r.Static("/static", "./static")
 
 	r.GET("/", home.Page)
 
