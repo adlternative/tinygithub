@@ -17,3 +17,61 @@
 .tree-icon-file {
     background-image: url("/static/octicons/file.svg");
 }
+/* 设置顶部导航栏 */
+header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    background-color: #333;
+}
+
+/* 设置 logo 样式 */
+header img {
+    width: 10px;
+    height: 10px;
+    margin-bottom: 20px;
+}
+
+/* 设置导航栏链接 */
+.topnav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    background-color: #333;
+}
+
+.topnav a {
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+/* 设置活动链接的样式 */
+.topnav a.active {
+    background-color: #4CAF50;
+}
+
+/* 设置登录注册链接的样式 */
+.login-register {
+    margin-left: auto;
+}
+
+.login-register a {
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+.login-register a:hover {
+    background-color: #ddd;
+    color: black;
+}
+
+/* 设置主要内容区域的样式 */
+.main-content {
+    margin: 20px;
+}

@@ -4,12 +4,26 @@
     <meta charset="UTF-8">
     <link rel="icon" type="image/svg+xml" href="/static/favicon.icon">
     <title>Tiny Github</title>
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-<h1>Welcome to Tiny Github</h1>
-<ul>
-    <li><a href="/user/login">Login</a></li>
-    <li><a href="/user/register">Register</a></li>
-</ul>
+
+<div class="topnav">
+    <a class="active" href="/">Home</a>
+    <div class="login-register">
+        <a href="/user/login">Login</a>
+        <a href="/user/register">Register</a>
+    </div>
+</div>
+<div class="main-image">
+    <img  src="/static/logo.png"  height="50" width="auto" alt="Tiny Github Logo">
+</div>
+
+<h1>Tiny Github </h1>
+{{ define "content" }}
+<p> 全球最大的同性交友平台 tiny gayhub </p>
+{{ end }}
+{{ template "content" . }}
+
 </body>
 </html>
