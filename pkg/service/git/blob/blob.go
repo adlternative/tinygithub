@@ -4,12 +4,10 @@ import (
 	"context"
 	"fmt"
 	"github.com/adlternative/tinygithub/pkg/cmd"
-	"github.com/adlternative/tinygithub/pkg/config"
 	"github.com/adlternative/tinygithub/pkg/model"
 	"github.com/adlternative/tinygithub/pkg/storage"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"github.com/spf13/viper"
 	"go.uber.org/zap/buffer"
 	"gorm.io/gorm"
 	"net/http"
@@ -98,30 +96,19 @@ func Show(db *model.DBEngine, store *storage.Storage) gin.HandlerFunc {
 		}
 		// 判断文件类型
 		contentType := http.DetectContentType(blobContents)
-		isBinary := false
+		//isBinary := false
 		switch {
 		case strings.HasPrefix(contentType, "text/"):
 			// 文本类型文件，直接显示
 		case strings.HasPrefix(contentType, "image/"):
 			// 图片类型文件，返回图片
-			c.Data(http.StatusOK, contentType, blobContents)
-			return
+			break
 		default:
 			// 其他类型文件，显示"二进制文件"
 			contentType = "text/plain"
-			isBinary = true
+			//isBinary = true
 			blobContents = []byte("binary file")
 		}
-
-		c.HTML(http.StatusOK, "repo.html", gin.H{
-			"RepoName":    user.Repositories[0].Name,
-			"Description": user.Repositories[0].Desc,
-			"Owner":       userName,
-			"DownloadURL": fmt.Sprintf("http://%s:%s/%s/%s.git", viper.GetString(config.ServerIp), viper.GetString(config.ServerPort), userName, repoName),
-			"BlobData":    string(blobContents),
-			"ContentType": contentType,
-			"IsBinary":    isBinary,
-		})
-
+		c.Data(http.StatusOK, contentType, blobContents)
 	}
 }
