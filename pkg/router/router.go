@@ -15,6 +15,8 @@ import (
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"os"
+	"path/filepath"
 )
 
 func Logger() gin.HandlerFunc {
@@ -25,6 +27,23 @@ func Logger() gin.HandlerFunc {
 		}).Debug("new http request")
 		c.Next()
 	}
+}
+
+func isDirectory(path string) bool {
+	// 将相对路径转换为绝对路径
+	absPath, err := filepath.Abs(path)
+	if err != nil {
+		return false
+	}
+
+	// 检查文件或目录是否存在
+	info, err := os.Stat(absPath)
+	if os.IsNotExist(err) {
+		return false
+	}
+
+	// 检查是否是目录
+	return info.IsDir()
 }
 
 func Run(store *storage.Storage, dbEngine *model.DBEngine) error {
@@ -39,7 +58,14 @@ func Run(store *storage.Storage, dbEngine *model.DBEngine) error {
 
 	r.Use(Logger(), gin.Recovery(), sessionMiddleWare)
 	r.LoadHTMLGlob("pkg/template/*")
-	r.Static("/static", "./static")
+
+	staticResourcePath := viper.GetString(config.StaticResourcePath)
+
+	if !isDirectory(staticResourcePath) {
+		return fmt.Errorf("staticResourcePath %s is not a directory", staticResourcePath)
+	}
+
+	r.Static("/static", staticResourcePath)
 
 	r.GET("/", home.Page)
 

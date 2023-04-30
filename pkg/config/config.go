@@ -22,6 +22,8 @@ const (
 	ServerPort = "server-port"
 
 	SessionSecret = "session-secret"
+
+	StaticResourcePath = "static-resource-path"
 )
 
 func InitLog() {
