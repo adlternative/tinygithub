@@ -1,5 +1,9 @@
-<ul>
+{{if .}}
+    <ul>
     {{range .}}
-    <li>Mode={{.Mode}} Type={{.Type}} OID={{.Oid}} PATH={{.Path}}</li>
+        <li>Mode={{.Mode}} Type={{.Type}} OID={{.Oid}} PATH={{.Path}}</li>
     {{end}}
-</ul>
+    </ul>
+{{else}}
+    Empty Repository
+{{end}}

@@ -1,7 +1,10 @@
 package tree
 
 import (
+	"bufio"
+	"context"
 	"fmt"
+	"github.com/adlternative/tinygithub/pkg/cmd"
 	"github.com/adlternative/tinygithub/pkg/service/git/object"
 	"strings"
 )
@@ -13,7 +16,7 @@ type Entry struct {
 	Path string
 }
 
-func Parse(treeLine string) (*Entry, error) {
+func ParseTreeLine(treeLine string) (*Entry, error) {
 	parts := strings.Split(treeLine, "\t")
 	if len(parts) != 2 {
 		return nil, fmt.Errorf("invalid tree line")
@@ -46,4 +49,35 @@ func Parse(treeLine string) (*Entry, error) {
 		Oid:  oid,
 		Path: parts[1],
 	}, nil
+}
+
+func ParseTree(ctx context.Context, repoPath, revision string) ([]*Entry, error) {
+	var stderrBuf strings.Builder
+
+	gitCmd := cmd.NewGitCommand("ls-tree").WithGitDir(repoPath).
+		WithArgs(revision).
+		WithStderr(&stderrBuf)
+
+	if err := gitCmd.Start(ctx); err != nil {
+		return nil, fmt.Errorf("gitCmd start failed with %w", err)
+	}
+
+	var entries []*Entry
+	scanner := bufio.NewScanner(gitCmd)
+
+	for scanner.Scan() {
+		entry, err := ParseTreeLine(scanner.Text())
+		if err != nil {
+			return nil, fmt.Errorf("parseTreeLine failed with %w", err)
+		}
+		entries = append(entries, entry)
+	}
+	if err := scanner.Err(); err != nil {
+		return nil, fmt.Errorf("scanner failed with %w", err)
+	}
+
+	if err := gitCmd.Wait(); err != nil {
+		return nil, fmt.Errorf("git command failed with stderr:%v, error:%w", stderrBuf.String(), err)
+	}
+	return entries, nil
 }

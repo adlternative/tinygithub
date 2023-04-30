@@ -1,20 +1,17 @@
 package repo
 
 import (
-	"bufio"
 	"fmt"
-	"github.com/adlternative/tinygithub/pkg/cmd"
 	"github.com/adlternative/tinygithub/pkg/config"
 	"github.com/adlternative/tinygithub/pkg/model"
+	gitRepo "github.com/adlternative/tinygithub/pkg/service/git/repo"
 	"github.com/adlternative/tinygithub/pkg/service/git/tree"
 	"github.com/adlternative/tinygithub/pkg/storage"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"gorm.io/gorm"
 	"net/http"
-	"strings"
 )
 
 func Home(db *model.DBEngine, store *storage.Storage) gin.HandlerFunc {
@@ -62,40 +59,20 @@ func Home(db *model.DBEngine, store *storage.Storage) gin.HandlerFunc {
 			c.HTML(http.StatusNotFound, "404.html", nil)
 			return
 		}
-		var stderrBuf strings.Builder
-		// git -c <repoPath> upload-pack --advertise-refs --stateless-rpc <repoPath>
-		// git -c <repoPath> receive-pack --advertise-refs --stateless-rpc <repoPath>
 
-		gitCmd := cmd.NewGitCommand("ls-tree").WithGitDir(repo.Path()).
-			WithArgs("HEAD").
-			WithStderr(&stderrBuf)
-
-		if err = gitCmd.Start(c); err != nil {
-			log.WithError(err).Errorf("git command start failed with: err:%v, stderr:%v", err, stderrBuf.String())
-			c.String(http.StatusInternalServerError, "git command start  failed with: err:%v, stderr:%v", err, stderrBuf.String())
-			return
-		}
-
+		revision := "HEAD"
+		// git rev-parse
+		isEmpty, _ := gitRepo.IsRepositoryEmpty(c, repo.Path())
 		var entries []*tree.Entry
-		scanner := bufio.NewScanner(gitCmd)
-
-		for scanner.Scan() {
-			entry, err := tree.Parse(scanner.Text())
+		if !isEmpty {
+			// git ls-tree
+			entries, err = tree.ParseTree(c, repo.Path(), revision)
 			if err != nil {
+				c.HTML(http.StatusInternalServerError, "500.html", gin.H{
+					"error": err.Error(),
+				})
 				return
 			}
-			entries = append(entries, entry)
-		}
-		if err = scanner.Err(); err != nil {
-			log.WithError(err).Errorf("scanner failed")
-			c.String(http.StatusInternalServerError, "scanner failed with: err:%v, stderr:%v", err, stderrBuf.String())
-			return
-		}
-
-		if err = gitCmd.Wait(); err != nil {
-			log.WithError(err).Errorf("git command failed with stderr:%v", stderrBuf.String())
-			c.String(http.StatusInternalServerError, "git command failed with: err:%v, stderr:%v", err, stderrBuf.String())
-			return
 		}
 
 		c.HTML(http.StatusOK, "repo.html", gin.H{
