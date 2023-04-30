@@ -69,6 +69,10 @@ func Run(store *storage.Storage, dbEngine *model.DBEngine) error {
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.New()
 
+	r.NoRoute(func(c *gin.Context) {
+		c.HTML(http.StatusNotFound, "404.html", nil)
+	})
+
 	sessionSecret := viper.GetString(config.SessionSecret)
 	if sessionSecret == "" {
 		return fmt.Errorf("empty session secret")
