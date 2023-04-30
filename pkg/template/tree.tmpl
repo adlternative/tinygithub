@@ -1,9 +1,17 @@
-{{if .}}
-    <ul>
-    {{range .}}
-        <li>Mode={{.Mode}} Type={{.Type}} OID={{.Oid}} PATH={{.Path}}</li>
+{{if .TreeEntries}}
+<ul class="tree">
+  {{range .TreeEntries}}
+  <li class="tree-entry">
+    {{if eq .Type.String "tree"}}
+    <span class="tree-icon tree-icon-directory"></span>
+    <a href="/{{$.Owner}}/{{$.RepoName}}/tree/{{.Path}}">{{.Path}}</a>
+    {{else}}
+    <span class="tree-icon tree-icon-file"></span>
+    <a href="/{{$.Owner}}/{{$.RepoName}}/blob/{{.Path}}">{{.Path}}</a>
     {{end}}
-    </ul>
+  </li>
+  {{end}}
+</ul>
 {{else}}
-    Empty Repository
+<p>Empty Repository</p>
 {{end}}

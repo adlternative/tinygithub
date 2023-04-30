@@ -3,6 +3,7 @@
 <head>
     <title>{{.Owner}}/{{.RepoName}}</title>
     <link rel="icon" type="image/png" href="/static/favicon.icon">
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 <h1>{{.Owner}}/{{.RepoName}}</h1>
@@ -37,6 +38,6 @@
         }
     });
 </script>
-{{template "tree.tmpl" .TreeEntries }}
+{{template "tree.tmpl" . }}
 </body>
 </html>

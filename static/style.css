@@ -1,0 +1,19 @@
+/* style.css */
+.tree-icon {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    margin-right: 5px;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: 16px 16px;
+    /*border-radius: 50%;*/
+}
+
+.tree-icon-directory {
+    background-image: url("/static/octicons/directory.svg");
+}
+
+.tree-icon-file {
+    background-image: url("/static/octicons/file.svg");
+}

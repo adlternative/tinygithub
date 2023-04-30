@@ -60,6 +60,21 @@ const (
 	Tag
 )
 
+func (t Type) String() string {
+	switch t {
+	case Blob:
+		return "blob"
+	case Tree:
+		return "tree"
+	case Commit:
+		return "commit"
+	case Tag:
+		return "tag"
+	default:
+		return "UnknownType"
+	}
+}
+
 func ParseType(typeString string) (Type, error) {
 	switch typeString {
 	case "blob":
