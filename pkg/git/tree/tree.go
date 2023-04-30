@@ -5,7 +5,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/adlternative/tinygithub/pkg/cmd"
-	"github.com/adlternative/tinygithub/pkg/service/git/object"
+	"github.com/adlternative/tinygithub/pkg/git/object"
 	"strings"
 )
 

@@ -1,38 +1,16 @@
 package blob
 
 import (
-	"context"
 	"fmt"
-	"github.com/adlternative/tinygithub/pkg/cmd"
+	"github.com/adlternative/tinygithub/pkg/git/blob"
 	"github.com/adlternative/tinygithub/pkg/model"
 	"github.com/adlternative/tinygithub/pkg/storage"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap/buffer"
 	"gorm.io/gorm"
 	"net/http"
 	"strings"
 )
-
-func showBlob(ctx context.Context, repoPath, revision string) ([]byte, error) {
-	var stderrBuf strings.Builder
-	var stdoutBuf buffer.Buffer
-
-	gitCmd := cmd.NewGitCommand("cat-file").WithGitDir(repoPath).
-		WithOptions("-p").
-		WithArgs(revision).
-		WithStderr(&stderrBuf).
-		WithStdout(&stdoutBuf)
-
-	if err := gitCmd.Start(ctx); err != nil {
-		return nil, fmt.Errorf("gitCmd start failed with %w", err)
-	}
-
-	if err := gitCmd.Wait(); err != nil {
-		return nil, fmt.Errorf("git command failed with stderr:%v, error:%w", stderrBuf.String(), err)
-	}
-	return stdoutBuf.Bytes(), nil
-}
 
 func Show(db *model.DBEngine, store *storage.Storage) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -89,7 +67,7 @@ func Show(db *model.DBEngine, store *storage.Storage) gin.HandlerFunc {
 		}
 
 		revision := fmt.Sprintf("HEAD:%s", blobPath)
-		blobContents, err := showBlob(c, repo.Path(), revision)
+		blobContents, err := blob.ShowBlob(c, repo.Path(), revision)
 		if err != nil {
 			c.HTML(http.StatusNotFound, "404.html", nil)
 			return

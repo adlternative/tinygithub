@@ -3,9 +3,9 @@ package repo
 import (
 	"fmt"
 	"github.com/adlternative/tinygithub/pkg/config"
+	gitRepo "github.com/adlternative/tinygithub/pkg/git/repo"
+	"github.com/adlternative/tinygithub/pkg/git/tree"
 	"github.com/adlternative/tinygithub/pkg/model"
-	gitRepo "github.com/adlternative/tinygithub/pkg/service/git/repo"
-	"github.com/adlternative/tinygithub/pkg/service/git/tree"
 	"github.com/adlternative/tinygithub/pkg/storage"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"

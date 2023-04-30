@@ -5,7 +5,7 @@ import (
 	"github.com/adlternative/tinygithub/pkg/config"
 	"github.com/adlternative/tinygithub/pkg/model"
 	"github.com/adlternative/tinygithub/pkg/service/auth"
-	"github.com/adlternative/tinygithub/pkg/service/git/blob"
+	"github.com/adlternative/tinygithub/pkg/service/blob"
 	"github.com/adlternative/tinygithub/pkg/service/home"
 	"github.com/adlternative/tinygithub/pkg/service/pack"
 	"github.com/adlternative/tinygithub/pkg/service/repo"
