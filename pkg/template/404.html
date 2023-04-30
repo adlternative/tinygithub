@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <link rel="icon" type="image/svg+xml" href="/static/favicon.icon">
+    <link rel="stylesheet" href="/static/style.css">
     <title>404 Not Found</title>
     <style>
         body {
@@ -21,12 +22,17 @@
         }
     </style>
 </head>
+
+<div class="topnav">
+    <a class="active" href="/">Home</a>
+    <div class="login-register">
+        <a href="/user/login">Login</a>
+        <a href="/user/register">Register</a>
+    </div>
+</div>
+
 <body>
 <h1>404</h1>
 <p>The requested page could not be found.</p>
-<ul>
-    <li><a href="/user/login">Login</a></li>
-    <li><a href="/user/register">Register</a></li>
-</ul>
 </body>
 </html>

@@ -1,9 +1,20 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Create Repository</title>
+    <meta charset="UTF-8">
     <link rel="icon" type="image/svg+xml" href="/static/favicon.icon">
+    <title>Tiny Github</title>
+    <link rel="stylesheet" href="/static/style.css">
 </head>
+
+<div class="topnav">
+    <a class="active" href="/">Home</a>
+    <div class="login-register">
+        <a href="/user/logout">Logout</a>
+        <a href="/repos/new">Create Repo</a>
+    </div>
+</div>
+
 <body>
 <h1>Create Repository</h1>
 {{ if .Error }}

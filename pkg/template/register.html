@@ -1,10 +1,18 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
     <link rel="icon" type="image/svg+xml" href="/static/favicon.icon">
-    <title>Register</title>
+    <title>Tiny Github</title>
+    <link rel="stylesheet" href="/static/style.css">
 </head>
+
+<div class="topnav">
+    <a class="active" href="/user/register">Register</a>
+    <div class="login-register">
+        <a href="/user/login">Login</a>
+    </div>
+</div>
 <body>
 <h1>Register</h1>
 {{ if .error }}

@@ -1,20 +1,25 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
     <link rel="icon" type="image/svg+xml" href="/static/favicon.icon">
-    <title>User</title>
+    <title>Tiny Github</title>
+    <link rel="stylesheet" href="/static/style.css">
 </head>
+
+<div class="topnav">
+    <a class="active" href="/">Home</a>
+    <div class="login-register">
+        <a href="/user/logout">Logout</a>
+        <a href="/repos/new">Create Repo</a>
+    </div>
+</div>
+
 <body>
 {{ with .user }}
 <h1>Welcome, {{ .Name }}!</h1>
 <p>Email: {{ .Email }}</p>
 {{ end }}
-<ul>
-    <li><a href="/user/logout">Logout</a></li>
-    <li><a href="/user/login">Login</a></li>
-    <li><a href="/user/register">Register</a></li>
-    <li><a href="/repos/new">Create Repo</a></li>
-</ul>
+
 </body>
 </html>

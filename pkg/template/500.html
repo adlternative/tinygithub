@@ -1,60 +1,41 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>500 Internal Server Error</title>
+    <meta charset="UTF-8">
     <link rel="icon" type="image/svg+xml" href="/static/favicon.icon">
+    <link rel="stylesheet" href="/static/style.css">
+    <title>500 Internal Server Error</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 50px;
-            background-color: #fff;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            border-radius: 5px;
-        }
-
-        h1 {
-            font-size: 36px;
-            margin-bottom: 20px;
-            color: #444;
-            text-align: center;
-        }
-
-        p {
-            font-size: 18px;
+            font-size: 16px;
             line-height: 1.5;
-            margin-bottom: 20px;
-            color: #666;
             text-align: center;
         }
-
-        a {
-            color: #007bff;
-            text-decoration: none;
+        h1 {
+            font-size: 48px;
+            margin-top: 100px;
         }
-
-        a:hover {
-            text-decoration: underline;
+        p {
+            font-size: 24px;
+            margin-top: 40px;
         }
     </style>
 </head>
-<body>
-<div class="container">
-    <h1>500 Internal Server Error</h1>
-    {{ if .error }}
-    <p style="color: red">{{ .error }}</p>
-    {{ end }}
-    <p>Oops, something went wrong. Our engineers have been notified and are working on a solution.</p>
-    <p>You can try <a href="/">going back to the homepage</a>, or contact us if you need further assistance.</p>
+
+<div class="topnav">
+    <a class="active" href="/">Home</a>
+    <div class="login-register">
+        <a href="/user/login">Login</a>
+        <a href="/user/register">Register</a>
+    </div>
 </div>
-<ul>
-    <li><a href="/user/login">Login</a></li>
-    <li><a href="/user/register">Register</a></li>
-</ul>
+
+<body>
+<h1>500</h1>
+<p>Internal Server Error</p>
+{{ if .error }}
+<p style="color: red">{{ .error }}</p>
+{{ end }}
 </body>
 </html>
