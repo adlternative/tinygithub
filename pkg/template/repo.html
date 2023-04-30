@@ -4,6 +4,42 @@
     <title>{{.Owner}}/{{.RepoName}}</title>
     <link rel="icon" type="image/png" href="/static/favicon.icon">
     <link rel="stylesheet" href="/static/style.css">
+    <style>
+        #code-button {
+            position: relative;
+            padding-right: 20px;
+        }
+        #code-button::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%);
+            border-width: 6px 0 6px 6px;
+            border-style: solid;
+            border-color: transparent transparent transparent #000;
+        }
+        #url-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            padding: 5px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            box-shadow: 0 2px 4px rgba(0,0,0,.2);
+            z-index: 1;
+        }
+        #url-dropdown::before {
+            content: "";
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 0 10px 10px 10px;
+            border-style: solid;
+            border-color: transparent transparent #ccc transparent;
+        }
+    </style>
 </head>
 <body>
 <h1>{{.Owner}}/{{.RepoName}}</h1>
@@ -12,7 +48,7 @@
 <div style="display: flex; align-items: center">
     <div style="position: relative">
         <button id="code-button">Code</button>
-        <div id="url-dropdown" style="display: none; position: absolute; top: 100%; left: 0">
+        <div id="url-dropdown" style="display: none">
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 5px">
                 <span style="max-width: 400px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ .DownloadURL }}</span>
                 <button id="copy-button">Copy</button>
@@ -39,11 +75,11 @@
     });
 </script>
 {{if .TreeEntries}}
-    {{template "tree.tmpl" . }}
+{{template "tree.tmpl" . }}
 {{end}}
 
 {{if .BlobData}}
-    {{template "blob.tmpl" . }}
+{{template "blob.tmpl" . }}
 {{end}}
 
 </body>
