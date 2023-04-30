@@ -9,25 +9,17 @@ A tiny git server used for learning git principle.
 go build
 ```
 2. edit config.json, you can see example in [config-example.json](config-example.json).
-3. put your git repositories to "storage" which specified in config file.
-```shell
-ls /home/adl/test/tinygithub/repositories/
-adlternative
-
-ls /home/adl/test/tinygithub/repositories/adlternative 
-CodeGPT.git  git.git
-```
-4. run tinygithub server
+3. run tinygithub server
 ```shell
 ./tinygithub server
 ```
-5. clone git repo via http protocol
+4. do what you want in the website, login, register, create repo and so on...
+
+![resource/example.png](resource/example.png)
+
+5. clone & push
 ```shell
 git clone http://127.0.0.1:8080/adlternative/git.git
-```
-
-6. push git repo via http protocol
-```shell
-#edit something...
-git push origin main
+...
+git push
 ```
