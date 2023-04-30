@@ -1,3 +1,9 @@
-<div class="file-content">
-  <pre>{{ $.BlobData | html}}</pre>
-</div>
+{{if .BlobData}}
+    {{if .IsBinary}}
+        <pre>{{ .BlobData }}</pre>
+    {{else if eq .ContentType "text/html"}}
+        {{ .BlobData | html }}
+    {{else}}
+        <pre>{{ .BlobData }}</pre>
+    {{end}}
+{{end}}
