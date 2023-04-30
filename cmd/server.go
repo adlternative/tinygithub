@@ -31,15 +31,15 @@ func init() {
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
 	serverCmd.PersistentFlags().String(config.Storage, "", "git repositories storage path")
-	rootCmd.PersistentFlags().String(config.DBUser, "", "database user")
-	rootCmd.PersistentFlags().String(config.DBPassword, "", "database password")
-	rootCmd.PersistentFlags().String(config.DBIp, "", "database Ip")
-	rootCmd.PersistentFlags().String(config.DBPort, "", "database port")
-	rootCmd.PersistentFlags().String(config.DBName, "", "database name")
-	rootCmd.PersistentFlags().String(config.ServerIp, "127.0.0.1", "server ip")
-	rootCmd.PersistentFlags().String(config.ServerPort, "8080", "server port")
-	rootCmd.PersistentFlags().String(config.SessionSecret, "", "session secret")
-	rootCmd.PersistentFlags().String(config.StaticResourcePath, "./static", "static resource path")
+	serverCmd.PersistentFlags().String(config.DBUser, "", "database user")
+	serverCmd.PersistentFlags().String(config.DBPassword, "", "database password")
+	serverCmd.PersistentFlags().String(config.DBIp, "", "database Ip")
+	serverCmd.PersistentFlags().String(config.DBPort, "", "database port")
+	serverCmd.PersistentFlags().String(config.DBName, "", "database name")
+	serverCmd.PersistentFlags().String(config.ServerIp, "127.0.0.1", "server ip")
+	serverCmd.PersistentFlags().String(config.ServerPort, "8080", "server port")
+	serverCmd.PersistentFlags().String(config.SessionSecret, "", "session secret")
+	serverCmd.PersistentFlags().String(config.StaticResourcePath, "./static", "static resource path")
 
 	if err := viper.BindPFlags(serverCmd.PersistentFlags()); err != nil {
 		log.Fatalf("viper bind serverCmd flags failed with %v", err)
