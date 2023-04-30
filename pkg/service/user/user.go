@@ -19,13 +19,13 @@ func Home(db *model.DBEngine) gin.HandlerFunc {
 			return
 		}
 
-		// session
 		session := sessions.Default(c)
-		sessionUserName := session.Get("username")
-		if sessionUserName == nil {
-			c.Redirect(http.StatusFound, "/user/login")
+		sessionUserName, ok := session.Get("username").(string)
+		if !ok {
+			c.HTML(http.StatusUnauthorized, "401.html", nil)
 			return
 		}
+
 		if userName != sessionUserName {
 			c.HTML(http.StatusUnauthorized, "401.html", nil)
 			return

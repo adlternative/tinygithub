@@ -13,33 +13,32 @@ import (
 )
 
 func CreatePage(c *gin.Context) {
-	session := sessions.Default(c)
-	sessionUserName := session.Get("username").(string)
-	if sessionUserName == "" {
-		c.Redirect(http.StatusFound, "/user/login")
-		return
-	}
 	c.HTML(http.StatusOK, "create_repo.html", nil)
 }
 
 func Create(db *model.DBEngine, store *storage.Storage) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		session := sessions.Default(c)
-		sessionUserName := session.Get("username").(string)
-		if sessionUserName == "" {
-			c.Redirect(http.StatusFound, "/user/login")
-			return
-		}
-		sessionUserID := session.Get("user_id").(uint)
 
 		repoName := c.PostForm("reponame")
 		description := c.PostForm("description")
+
+		session := sessions.Default(c)
+		userName, ok := session.Get("username").(string)
+		if !ok {
+			c.HTML(http.StatusUnauthorized, "401.html", nil)
+			return
+		}
+		userID, ok := session.Get("user_id").(uint)
+		if !ok {
+			c.HTML(http.StatusUnauthorized, "401.html", nil)
+			return
+		}
 
 		tx := db.Begin()
 
 		// 判断仓库是否已经存在
 		var existingRepository model.Repository
-		if err := tx.Where("user_id = ? AND name = ?", sessionUserID, repoName).First(&existingRepository).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		if err := tx.Where("user_id = ? AND name = ?", userID, repoName).First(&existingRepository).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 			tx.Rollback()
 			c.HTML(http.StatusInternalServerError, "500.html", gin.H{"error": err.Error()})
 			return
@@ -50,11 +49,11 @@ func Create(db *model.DBEngine, store *storage.Storage) gin.HandlerFunc {
 		}
 
 		// git init
-		_, err := store.CreateRepository(c, sessionUserName, repoName)
+		_, err := store.CreateRepository(c, userName, repoName)
 		if err != nil {
 			tx.Rollback()
 
-			err2 := store.RemoveRepository(c, sessionUserName, repoName)
+			err2 := store.RemoveRepository(c, userName, repoName)
 			if err2 != nil {
 				log.WithError(err2).Errorf("repo create rollback failed")
 			}
@@ -64,13 +63,13 @@ func Create(db *model.DBEngine, store *storage.Storage) gin.HandlerFunc {
 		}
 
 		if err = tx.Create(&model.Repository{
-			UserID: sessionUserID,
+			UserID: userID,
 			Name:   repoName,
 			Desc:   description,
 		}).Error; err != nil {
 			tx.Rollback()
 
-			err2 := store.RemoveRepository(c, sessionUserName, repoName)
+			err2 := store.RemoveRepository(c, userName, repoName)
 			if err2 != nil {
 				log.WithError(err2).Errorf("repo create rollback failed")
 			}
@@ -83,7 +82,7 @@ func Create(db *model.DBEngine, store *storage.Storage) gin.HandlerFunc {
 		if err = tx.Commit().Error; err != nil {
 			tx.Rollback()
 
-			err2 := store.RemoveRepository(c, sessionUserName, repoName)
+			err2 := store.RemoveRepository(c, userName, repoName)
 			if err2 != nil {
 				log.WithError(err2).Errorf("repo create rollback failed")
 			}
@@ -93,6 +92,6 @@ func Create(db *model.DBEngine, store *storage.Storage) gin.HandlerFunc {
 			return
 		}
 
-		c.Redirect(http.StatusFound, "/"+sessionUserName+"/"+repoName)
+		c.Redirect(http.StatusFound, "/"+userName+"/"+repoName)
 	}
 }

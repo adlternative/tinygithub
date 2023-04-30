@@ -7,7 +7,6 @@ import (
 	"github.com/adlternative/tinygithub/pkg/git/tree"
 	"github.com/adlternative/tinygithub/pkg/model"
 	"github.com/adlternative/tinygithub/pkg/storage"
-	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 	"gorm.io/gorm"
@@ -17,14 +16,6 @@ import (
 
 func Home(db *model.DBEngine, store *storage.Storage) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		session := sessions.Default(c)
-		sessionUserName := session.Get("username").(string)
-		if sessionUserName == "" {
-			c.Redirect(http.StatusFound, "/user/login")
-			return
-		}
-		sessionUserID := session.Get("user_id").(uint)
-
 		userName := c.Param("username")
 		repoName := c.Param("reponame")
 		treePath := c.Param("treepath")
@@ -36,8 +27,7 @@ func Home(db *model.DBEngine, store *storage.Storage) gin.HandlerFunc {
 		}
 
 		var user model.User
-		user.Name = sessionUserName
-		user.ID = sessionUserID
+		user.Name = userName
 
 		if err := db.Where("name = ?", userName).Preload("Repositories", "name = ?", repoName).First(&user).Error; err != nil {
 			// 处理错误

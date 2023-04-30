@@ -49,6 +49,22 @@ func isDirectory(path string) bool {
 	return info.IsDir()
 }
 
+func RemoveGitSuffixMiddleWare() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// 获取 reponame
+		reponame := c.Param("reponame")
+
+		// 检查 reponame 是否以 .git 结尾
+		if strings.HasSuffix(reponame, ".git") {
+			// 将请求重定向到 /:username/repo
+			c.Redirect(http.StatusMovedPermanently, "/"+c.Param("username")+"/"+reponame[:len(reponame)-4])
+			return
+		}
+
+		c.Next()
+	}
+}
+
 func Run(store *storage.Storage, dbEngine *model.DBEngine) error {
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.New()
@@ -70,33 +86,7 @@ func Run(store *storage.Storage, dbEngine *model.DBEngine) error {
 
 	r.Static("/static", staticResourcePath)
 
-	r.GET("/", home.Page)
-
-	gitRepoGroup := r.Group("/:username/:reponame")
-	gitRepoGroup.Use(func(c *gin.Context) {
-		// 获取 reponame
-		reponame := c.Param("reponame")
-
-		// 检查 reponame 是否以 .git 结尾
-		if strings.HasSuffix(reponame, ".git") {
-			// 将请求重定向到 /:username/repo
-			c.Redirect(http.StatusMovedPermanently, "/"+c.Param("username")+"/"+reponame[:len(reponame)-4])
-			return
-		}
-
-		c.Next()
-	})
-	{
-		gitRepoGroup.GET("", repo.Home(dbEngine, store))
-		gitRepoGroup.GET("/tree/*treepath", repo.Home(dbEngine, store))
-		gitRepoGroup.GET("/blob/*blobpath", blob.Show(dbEngine, store))
-
-		gitRepoGroup.GET("/info/refs", pack.InfoRefs(store))
-		gitRepoGroup.POST("/git-upload-pack", pack.UploadPack(store))
-		gitRepoGroup.POST("/git-receive-pack", pack.ReceivePack(store))
-	}
-
-	r.GET("/:username", user.Home(dbEngine))
+	r.GET("/", home.Page(dbEngine))
 
 	authGroup := r.Group("/user")
 	{
@@ -115,6 +105,20 @@ func Run(store *storage.Storage, dbEngine *model.DBEngine) error {
 
 		authGroup.GET("/logout", auth.Logout)
 	}
+
+	gitRepoGroup := r.Group("/:username/:reponame")
+	gitRepoGroup.Use(RemoveGitSuffixMiddleWare())
+	{
+		gitRepoGroup.GET("", repo.Home(dbEngine, store))
+		gitRepoGroup.GET("/tree/*treepath", repo.Home(dbEngine, store))
+		gitRepoGroup.GET("/blob/*blobpath", blob.Show(dbEngine, store))
+
+		gitRepoGroup.GET("/info/refs", pack.InfoRefs(store))
+		gitRepoGroup.POST("/git-upload-pack", pack.UploadPack(store))
+		gitRepoGroup.POST("/git-receive-pack", pack.ReceivePack(store))
+	}
+
+	r.GET("/:username", user.Home(dbEngine))
 
 	repoGroup := r.Group("/repos")
 	{
