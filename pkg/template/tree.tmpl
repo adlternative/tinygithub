@@ -3,11 +3,19 @@
   {{range .TreeEntries}}
   <li class="tree-entry">
     {{if eq .Type.String "tree"}}
-    <span class="tree-icon tree-icon-directory"></span>
-    <a href="/{{$.Owner}}/{{$.RepoName}}/tree/{{.Path}}">{{.Path}}</a>
+        <span class="tree-icon tree-icon-directory"></span>
+            {{if $.TreePath}}
+                <a href="/{{$.Owner}}/{{$.RepoName}}/tree/{{$.TreePath}}/{{.Path}}">{{.Path}}</a>
+            {{else}}
+                 <a href="/{{$.Owner}}/{{$.RepoName}}/tree/{{.Path}}">{{.Path}}</a>
+            {{end}}
     {{else}}
     <span class="tree-icon tree-icon-file"></span>
-    <a href="/{{$.Owner}}/{{$.RepoName}}/blob/{{.Path}}">{{.Path}}</a>
+        {{if $.TreePath}}
+            <a href="/{{$.Owner}}/{{$.RepoName}}/blob/{{$.TreePath}}/{{.Path}}">{{.Path}}</a>
+        {{else}}
+            <a href="/{{$.Owner}}/{{$.RepoName}}/blob/{{.Path}}">{{.Path}}</a>
+        {{end}}
     {{end}}
   </li>
   {{end}}

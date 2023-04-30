@@ -1,21 +1,42 @@
-package repo
+package blob
 
 import (
+	"context"
 	"fmt"
+	"github.com/adlternative/tinygithub/pkg/cmd"
 	"github.com/adlternative/tinygithub/pkg/config"
 	"github.com/adlternative/tinygithub/pkg/model"
-	gitRepo "github.com/adlternative/tinygithub/pkg/service/git/repo"
-	"github.com/adlternative/tinygithub/pkg/service/git/tree"
 	"github.com/adlternative/tinygithub/pkg/storage"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
+	"go.uber.org/zap/buffer"
 	"gorm.io/gorm"
 	"net/http"
 	"strings"
 )
 
-func Home(db *model.DBEngine, store *storage.Storage) gin.HandlerFunc {
+func showBlob(ctx context.Context, repoPath, revision string) ([]byte, error) {
+	var stderrBuf strings.Builder
+	var stdoutBuf buffer.Buffer
+
+	gitCmd := cmd.NewGitCommand("cat-file").WithGitDir(repoPath).
+		WithOptions("-p").
+		WithArgs(revision).
+		WithStderr(&stderrBuf).
+		WithStdout(&stdoutBuf)
+
+	if err := gitCmd.Start(ctx); err != nil {
+		return nil, fmt.Errorf("gitCmd start failed with %w", err)
+	}
+
+	if err := gitCmd.Wait(); err != nil {
+		return nil, fmt.Errorf("git command failed with stderr:%v, error:%w", stderrBuf.String(), err)
+	}
+	return stdoutBuf.Bytes(), nil
+}
+
+func Show(db *model.DBEngine, store *storage.Storage) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		session := sessions.Default(c)
 		sessionUserName := session.Get("username").(string)
@@ -27,14 +48,13 @@ func Home(db *model.DBEngine, store *storage.Storage) gin.HandlerFunc {
 
 		userName := c.Param("username")
 		repoName := c.Param("reponame")
-		treePath := c.Param("treepath")
-		if strings.HasSuffix(treePath, "/") {
-			treePath = strings.TrimSuffix(treePath, "/")
+		blobPath := c.Param("blobpath")
+		if strings.HasSuffix(blobPath, "/") {
+			blobPath = strings.TrimSuffix(blobPath, "/")
 		}
-		if strings.HasPrefix(treePath, "/") {
-			treePath = strings.TrimPrefix(treePath, "/")
+		if strings.HasPrefix(blobPath, "/") {
+			blobPath = strings.TrimPrefix(blobPath, "/")
 		}
-
 		var user model.User
 		user.Name = sessionUserName
 		user.ID = sessionUserID
@@ -64,33 +84,25 @@ func Home(db *model.DBEngine, store *storage.Storage) gin.HandlerFunc {
 
 		repo, err := store.GetRepository(userName, repoName)
 		if err != nil {
-			c.HTML(http.StatusNotFound, "404.html", nil)
+			c.HTML(http.StatusInternalServerError, "500.html", gin.H{
+				"error": err.Error(),
+			})
 			return
 		}
 
-		revision := "HEAD"
-
-		// git rev-parse
-		isEmpty, _ := gitRepo.IsRepositoryEmpty(c, repo.Path())
-		var entries []*tree.Entry
-		if !isEmpty {
-			// git ls-tree
-			entries, err = tree.ParseTree(c, repo.Path(), revision, treePath)
-			if err != nil {
-				c.HTML(http.StatusInternalServerError, "500.html", gin.H{
-					"error": err.Error(),
-				})
-				return
-			}
+		revision := fmt.Sprintf("HEAD:%s", blobPath)
+		blobContents, err := showBlob(c, repo.Path(), revision)
+		if err != nil {
+			c.HTML(http.StatusNotFound, "404.html", nil)
+			return
 		}
-
 		c.HTML(http.StatusOK, "repo.html", gin.H{
 			"RepoName":    user.Repositories[0].Name,
 			"Description": user.Repositories[0].Desc,
 			"Owner":       userName,
 			"DownloadURL": fmt.Sprintf("http://%s:%s/%s/%s.git", viper.GetString(config.ServerIp), viper.GetString(config.ServerPort), userName, repoName),
-			"TreePath":    treePath,
-			"TreeEntries": entries,
+			"BlobData":    string(blobContents),
 		})
+
 	}
 }

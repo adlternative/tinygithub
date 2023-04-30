@@ -5,6 +5,7 @@ import (
 	"github.com/adlternative/tinygithub/pkg/config"
 	"github.com/adlternative/tinygithub/pkg/model"
 	"github.com/adlternative/tinygithub/pkg/service/auth"
+	"github.com/adlternative/tinygithub/pkg/service/git/blob"
 	"github.com/adlternative/tinygithub/pkg/service/home"
 	"github.com/adlternative/tinygithub/pkg/service/pack"
 	"github.com/adlternative/tinygithub/pkg/service/repo"
@@ -72,6 +73,9 @@ func Run(store *storage.Storage, dbEngine *model.DBEngine) error {
 	gitRepoGroup := r.Group("/:username/:reponame")
 	{
 		gitRepoGroup.GET("", repo.Home(dbEngine, store))
+		gitRepoGroup.GET("/tree/*treepath", repo.Home(dbEngine, store))
+		gitRepoGroup.GET("/blob/*blobpath", blob.Show(dbEngine, store))
+
 		gitRepoGroup.GET("/info/refs", pack.InfoRefs(store))
 		gitRepoGroup.POST("/git-upload-pack", pack.UploadPack(store))
 		gitRepoGroup.POST("/git-receive-pack", pack.ReceivePack(store))

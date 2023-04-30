@@ -38,6 +38,13 @@
         }
     });
 </script>
-{{template "tree.tmpl" . }}
+{{if .TreeEntries}}
+    {{template "tree.tmpl" . }}
+{{end}}
+
+{{if .BlobData}}
+    {{template "blob.tmpl" . }}
+{{end}}
+
 </body>
 </html>

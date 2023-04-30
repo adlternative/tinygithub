@@ -51,11 +51,11 @@ func ParseTreeLine(treeLine string) (*Entry, error) {
 	}, nil
 }
 
-func ParseTree(ctx context.Context, repoPath, revision string) ([]*Entry, error) {
+func ParseTree(ctx context.Context, repoPath, revision string, treePath string) ([]*Entry, error) {
 	var stderrBuf strings.Builder
 
 	gitCmd := cmd.NewGitCommand("ls-tree").WithGitDir(repoPath).
-		WithArgs(revision).
+		WithArgs(fmt.Sprintf("%s:%s", revision, treePath)).
 		WithStderr(&stderrBuf)
 
 	if err := gitCmd.Start(ctx); err != nil {
