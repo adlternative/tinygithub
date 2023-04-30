@@ -16,8 +16,10 @@ import (
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 func Logger() gin.HandlerFunc {
@@ -71,6 +73,19 @@ func Run(store *storage.Storage, dbEngine *model.DBEngine) error {
 	r.GET("/", home.Page)
 
 	gitRepoGroup := r.Group("/:username/:reponame")
+	gitRepoGroup.Use(func(c *gin.Context) {
+		// 获取 reponame
+		reponame := c.Param("reponame")
+
+		// 检查 reponame 是否以 .git 结尾
+		if strings.HasSuffix(reponame, ".git") {
+			// 将请求重定向到 /:username/repo
+			c.Redirect(http.StatusMovedPermanently, "/"+c.Param("username")+"/"+reponame[:len(reponame)-4])
+			return
+		}
+
+		c.Next()
+	})
 	{
 		gitRepoGroup.GET("", repo.Home(dbEngine, store))
 		gitRepoGroup.GET("/tree/*treepath", repo.Home(dbEngine, store))
