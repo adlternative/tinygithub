@@ -89,6 +89,7 @@ func Run(store *storage.Storage, dbEngine *model.DBEngine) error {
 	}
 
 	r.Static("/static", staticResourcePath)
+	r.StaticFile("/favicon.icon", staticResourcePath+"/favicon.icon")
 
 	r.GET("/", home.Page(dbEngine))
 
