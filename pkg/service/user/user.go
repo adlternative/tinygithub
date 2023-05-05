@@ -14,7 +14,7 @@ func Home(db *model.DBEngine) gin.HandlerFunc {
 		// url
 		userName := c.Param("username")
 		var user model.User
-		if err := db.Where("name = ?", userName).First(&user).Error; err != nil {
+		if err := db.Preload("Repositories").Where("name = ?", userName).First(&user).Error; err != nil {
 			c.HTML(http.StatusNotFound, "404.html", nil)
 			return
 		}

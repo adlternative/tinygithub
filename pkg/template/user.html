@@ -16,10 +16,13 @@
 </div>
 
 <body>
-{{ with .user }}
-<h1>Welcome, {{ .Name }}!</h1>
-<p>Email: {{ .Email }}</p>
-{{ end }}
+<h1>Welcome, {{ .user.Name }}!</h1>
+<p>Email: {{ .user.Email }}</p>
+<ul>
+    {{ range .user.Repositories }}
+    <li><a href="/{{$.user.Name}}/{{ .Name }}">{{ .Name }}</a> - {{ .Desc }}</li>
+    {{ end }}
+</ul>
 
 </body>
 </html>
