@@ -2,7 +2,9 @@ package model
 
 import (
 	"fmt"
+	"github.com/adlternative/tinygithub/pkg/config"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -24,7 +26,7 @@ func NewDBEngine() *DBEngine {
 func (db *DBEngine) init() error {
 	migrator := db.Migrator()
 
-	if !migrator.HasTable(&User{}) || !migrator.HasTable(&Password{}) || !migrator.HasTable(&Repository{}) {
+	if viper.GetBool(config.DBSync) || !migrator.HasTable(&User{}) || !migrator.HasTable(&Password{}) || !migrator.HasTable(&Repository{}) {
 		return db.AutoMigrate(&User{}, &Password{}, &Repository{})
 	}
 	return nil

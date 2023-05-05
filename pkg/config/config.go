@@ -17,6 +17,7 @@ const (
 	DBIp       = "db-ip"
 	DBPort     = "db-port"
 	DBName     = "db-name"
+	DBSync     = "db-sync"
 
 	ServerIp   = "server-ip"
 	ServerPort = "server-port"
