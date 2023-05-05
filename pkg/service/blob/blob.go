@@ -23,6 +23,11 @@ func Show(db *model.DBEngine, store *storage.Storage) gin.HandlerFunc {
 		if strings.HasPrefix(blobPath, "/") {
 			blobPath = strings.TrimPrefix(blobPath, "/")
 		}
+
+		if blobPath == "" {
+			c.HTML(http.StatusNotFound, "404.html", nil)
+			return
+		}
 		var user model.User
 		user.Name = userName
 
