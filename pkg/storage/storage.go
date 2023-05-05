@@ -8,6 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"io/fs"
 	"os"
+	"os/exec"
 	"path"
 	"strings"
 
@@ -88,7 +89,7 @@ func (s *Storage) CreateRepository(ctx *gin.Context, userName, repoName string) 
 		WithOptions("--bare").WithStderr(&stderrBuf)
 	err = gitCmd.Run(ctx)
 	if err != nil {
-		log.WithError(err).Errorf("git command failed with: err:%v, stderr:%v", err, stderrBuf.String())
+		log.WithError(err).Errorf("git command failed with: Error:%v, stderr:%v", err, stderrBuf.String())
 		return nil, err
 	}
 
@@ -113,4 +114,46 @@ func (s *Storage) RemoveRepository(ctx *gin.Context, userName, repoName string) 
 
 	err = os.RemoveAll(repoPath)
 	return err
+}
+
+func BackUp(repoPath, backUpPath string) error {
+	_, err := os.Stat(repoPath)
+	if err != nil {
+		return err
+	}
+
+	// check backup not exist
+	_, err = os.Stat(backUpPath)
+	if err == nil {
+		return fmt.Errorf("backUpPath %s existed", backUpPath)
+	}
+
+	// Copy the repository to the backup directory
+	backUpCmd := exec.Command("cp", "-R", repoPath, backUpPath)
+	if err = backUpCmd.Run(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func Restore(repoPath, backUpPath string) error {
+	// check repo exists
+	_, err := os.Stat(repoPath)
+	if err == nil {
+		return nil
+	}
+
+	// check backup exists
+	_, err = os.Stat(backUpPath)
+	if err != nil {
+		return fmt.Errorf("stat backUpPath error: %w", err)
+	}
+
+	// restore the repository from the backup
+	restoreCmd := exec.Command("cp", "-R", backUpPath, repoPath)
+	if err = restoreCmd.Run(); err != nil {
+		return err
+	}
+	return nil
 }

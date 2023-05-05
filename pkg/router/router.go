@@ -129,6 +129,8 @@ func Run(store *storage.Storage, dbEngine *model.DBEngine) error {
 	{
 		repoGroup.GET("/new", repo.CreatePage)
 		repoGroup.POST("/new", repo.Create(dbEngine, store))
+		repoGroup.POST("/delete", repo.Delete(dbEngine, store))
+
 		//repoGroup.Get("/:id", repo.Get(dbEngine))
 	}
 
