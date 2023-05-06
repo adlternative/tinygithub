@@ -5,6 +5,7 @@ import (
 	"github.com/adlternative/tinygithub/pkg/cmd"
 	"github.com/adlternative/tinygithub/pkg/storage"
 	"github.com/gin-gonic/gin"
+	"github.com/git-lfs/pktline"
 	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
@@ -44,8 +45,22 @@ func InfoRefs(storage *storage.Storage) gin.HandlerFunc {
 		// git -c <repoPath> upload-pack --advertise-refs --stateless-rpc <repoPath>
 		// git -c <repoPath> receive-pack --advertise-refs --stateless-rpc <repoPath>
 
+		pktlineWriter := pktline.NewPktlineWriter(c.Writer, 0)
+		_, err = pktlineWriter.Write([]byte(fmt.Sprintf("# service=git-%s\n", serviceName)))
+		if err != nil {
+			log.WithError(err).Errorf("pktlineWriter write failed")
+			c.String(http.StatusInternalServerError, "pktlineWriter write failed with %v", err)
+			return
+		}
+		err = pktlineWriter.Flush()
+		if err != nil {
+			log.WithError(err).Errorf("pktlineWriter flush failed")
+			c.String(http.StatusInternalServerError, "pktlineWriter flush failed with %v", err)
+			return
+		}
+
 		gitCmd := cmd.NewGitCommand(serviceName).WithGitDir(repo.Path()).
-			WithOptions("--advertise-refs", "--stateless-rpc", "--show-service").
+			WithOptions("--advertise-refs", "--stateless-rpc").
 			WithArgs(repo.Path()).WithStderr(&stderrBuf).WithStdout(c.Writer)
 
 		if protocol := c.GetHeader("Git-Protocol"); protocol != "" {
