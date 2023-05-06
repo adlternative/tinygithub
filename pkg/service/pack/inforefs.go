@@ -14,7 +14,7 @@ func InfoRefs(storage *storage.Storage) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userName := c.Param("username")
 		// check user exist
-		repoName := c.Param("reponame")
+		repoName := strings.TrimSuffix(c.Param("reponame"), ".git")
 
 		// check repo exist
 		serviceName := c.Query("service")

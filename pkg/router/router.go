@@ -19,7 +19,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
 )
 
 func Logger() gin.HandlerFunc {
@@ -47,22 +46,6 @@ func isDirectory(path string) bool {
 
 	// 检查是否是目录
 	return info.IsDir()
-}
-
-func RemoveGitSuffixMiddleWare() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		// 获取 reponame
-		reponame := c.Param("reponame")
-
-		// 检查 reponame 是否以 .git 结尾
-		if strings.HasSuffix(reponame, ".git") {
-			// 将请求重定向到 /:username/repo
-			c.Redirect(http.StatusMovedPermanently, "/"+c.Param("username")+"/"+reponame[:len(reponame)-4])
-			return
-		}
-
-		c.Next()
-	}
 }
 
 func Run(store *storage.Storage, dbEngine *model.DBEngine) error {
@@ -112,7 +95,6 @@ func Run(store *storage.Storage, dbEngine *model.DBEngine) error {
 	}
 
 	gitRepoGroup := r.Group("/:username/:reponame")
-	gitRepoGroup.Use(RemoveGitSuffixMiddleWare())
 	{
 		gitRepoGroup.GET("", repo.Home(dbEngine, store))
 		gitRepoGroup.GET("/tree/*treepath", repo.Home(dbEngine, store))

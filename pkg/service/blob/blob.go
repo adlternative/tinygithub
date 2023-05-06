@@ -15,7 +15,7 @@ func Show(db *model.DBEngine, store *storage.Storage) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		userName := c.Param("username")
-		repoName := c.Param("reponame")
+		repoName := strings.TrimSuffix(c.Param("reponame"), ".git")
 		blobPath := c.Param("blobpath")
 		if strings.HasSuffix(blobPath, "/") {
 			blobPath = strings.TrimSuffix(blobPath, "/")

@@ -17,7 +17,7 @@ func ReceivePack(storage *storage.Storage) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		serviceName := "receive-pack"
 		userName := c.Param("username")
-		repoName := c.Param("reponame")
+		repoName := strings.TrimSuffix(c.Param("reponame"), ".git")
 
 		repo, err := storage.GetRepository(userName, repoName)
 		if err != nil {

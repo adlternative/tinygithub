@@ -17,8 +17,9 @@ import (
 func Home(db *model.DBEngine, store *storage.Storage) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userName := c.Param("username")
-		repoName := c.Param("reponame")
+		repoName := strings.TrimSuffix(c.Param("reponame"), ".git")
 		treePath := c.Param("treepath")
+
 		if strings.HasSuffix(treePath, "/") {
 			treePath = strings.TrimSuffix(treePath, "/")
 		}
