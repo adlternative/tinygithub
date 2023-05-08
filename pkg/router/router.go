@@ -31,6 +31,19 @@ func Logger() gin.HandlerFunc {
 	}
 }
 
+func DefaultCORS() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Header("Access-Control-Allow-Origin", "*")
+		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		c.Header("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		c.Next()
+	}
+}
+
+func DefaultOptions(c *gin.Context) {
+	c.Status(http.StatusNoContent)
+}
+
 func isDirectory(path string) bool {
 	// 将相对路径转换为绝对路径
 	absPath, err := filepath.Abs(path)
@@ -75,6 +88,17 @@ func Run(store *storage.Storage, dbEngine *model.DBEngine) error {
 	r.StaticFile("/favicon.icon", staticResourcePath+"/favicon.icon")
 
 	r.GET("/", home.Page(dbEngine))
+
+	apiGroup := r.Group("/api")
+	apiGroup.Use(DefaultCORS())
+	{
+		v2Group := apiGroup.Group("/v2")
+		{
+			v2Group.POST("/user/login", auth.LoginV2(dbEngine))
+			v2Group.OPTIONS("/user/login", DefaultOptions)
+
+		}
+	}
 
 	authGroup := r.Group("/user")
 	{

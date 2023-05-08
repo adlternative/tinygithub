@@ -58,3 +58,65 @@ func Login(db *model.DBEngine) gin.HandlerFunc {
 		c.Redirect(http.StatusFound, "/"+user.Name)
 	}
 }
+
+type loginRequest struct {
+	Account  string `json:"account"`
+	Password string `json:"password"`
+}
+
+// LoginV2 check if user's name, email exists and password right
+func LoginV2(db *model.DBEngine) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		contentType := c.GetHeader("Content-Type")
+		switch contentType {
+		case "application/json":
+			var req loginRequest
+			if err := c.ShouldBindJSON(&req); err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": err})
+			}
+			var user model.User
+
+			if req.Account == "" {
+				log.Error("invalid account")
+				c.JSON(http.StatusBadRequest, gin.H{"error": "invalid account"})
+				c.JSON(http.StatusBadRequest, gin.H{"error": "invalid account"})
+				return
+			}
+
+			db.Where("name = ? OR email = ?", req.Account, req.Account).First(&user)
+			if user.ID == 0 {
+				c.JSON(http.StatusNotFound, gin.H{"error": "invalid username or email"})
+				return
+			}
+
+			var password model.Password
+			db.Where("user_id = ?", user.ID).First(&password)
+
+			if password.ID == 0 || !cryto.CheckPasswordHash(req.Password, password.Password) {
+				c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid password"})
+				return
+			}
+
+			session := sessions.Default(c)
+			session.Set("username", user.Name)
+			session.Set("user_id", user.ID)
+
+			err := session.Save()
+			if err != nil {
+				log.WithError(err).Error("session save failed when login")
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "session save failed when login"})
+				return
+			}
+
+			log.WithFields(
+				log.Fields{
+					"username": user.Name,
+					"user_id":  user.ID,
+				}).Info("login success")
+
+			c.JSON(http.StatusOK, gin.H{"message": "login success"})
+		default:
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request format"})
+		}
+	}
+}
