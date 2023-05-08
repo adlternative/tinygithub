@@ -94,7 +94,7 @@ func Run(store *storage.Storage, dbEngine *model.DBEngine) error {
 	{
 		v2Group := apiGroup.Group("/v2")
 		{
-			v2AuthGroup := v2Group.Group("/user")
+			v2AuthGroup := v2Group.Group("/auth")
 			{
 				v2AuthGroup.POST("/login", auth.LoginV2(dbEngine))
 				v2AuthGroup.OPTIONS("/login", DefaultOptions)
