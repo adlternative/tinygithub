@@ -101,7 +101,11 @@ func Run(store *storage.Storage, dbEngine *model.DBEngine) error {
 				v2AuthGroup.POST("/register", auth.RegisterV2(dbEngine))
 				v2AuthGroup.OPTIONS("/register", DefaultOptions)
 			}
-
+			v2UserGroup := v2Group.Group("/users")
+			{
+				v2UserGroup.GET(":username", user.UserInfoV2(dbEngine))
+				v2AuthGroup.OPTIONS(":username", DefaultOptions)
+			}
 		}
 	}
 

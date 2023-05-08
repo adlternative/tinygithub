@@ -34,3 +34,18 @@ func Home(db *model.DBEngine) gin.HandlerFunc {
 		c.HTML(http.StatusOK, "user.html", gin.H{"user": user})
 	}
 }
+
+// UserInfoV2 show user information
+func UserInfoV2(db *model.DBEngine) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userName := c.Param("username")
+		var user model.User
+		if err := db.Where("name = ?", userName).First(&user).Error; err != nil {
+			c.HTML(http.StatusNotFound, "404.html", nil)
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"user": user,
+		})
+	}
+}
