@@ -14,6 +14,22 @@ import (
 	"strings"
 )
 
+func ShowRepos(db *model.DBEngine) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userName := c.Param("username")
+		var user model.User
+		if err := db.Preload("Repositories").Where("name = ?", userName).First(&user).Error; err != nil {
+			c.JSON(http.StatusNotFound, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"user": user,
+		})
+	}
+}
+
 func Home(db *model.DBEngine, store *storage.Storage) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userName := c.Param("username")
