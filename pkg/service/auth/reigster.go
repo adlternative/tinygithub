@@ -119,3 +119,91 @@ func registerTx(c *gin.Context, tx *gorm.DB, user *model.User) (int, error) {
 
 	return http.StatusFound, nil
 }
+
+type registerRequest struct {
+	UserName string `json:"username"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+// RegisterV2 take the account and password to create a new user
+func RegisterV2(db *model.DBEngine) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		contentType := c.GetHeader("Content-Type")
+		switch contentType {
+		case "application/json":
+			var req registerRequest
+			if err := c.ShouldBindJSON(&req); err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": err})
+			}
+
+			if !isAlphanumeric(req.UserName) {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "invalid username or email"})
+				return
+			}
+			if isReserved(req.UserName) {
+				c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("The username \"%s\" is reserved", req.UserName)})
+				return
+			}
+
+			err := db.Transaction(func(tx *gorm.DB) error {
+				var existedUser model.User
+
+				err := tx.Where("name = ?", req.UserName).First(&existedUser).Error
+				if err != nil && err != gorm.ErrRecordNotFound {
+					return err
+				} else if err == nil {
+					return fmt.Errorf("existed user with username %s", existedUser.Name)
+				}
+				err = tx.Where("email = ?", req.Email).First(&existedUser).Error
+				if err != nil && err != gorm.ErrRecordNotFound {
+					return err
+				} else if err == nil {
+					return fmt.Errorf("existed user with email %s", existedUser.Email)
+				}
+
+				user := &model.User{
+					Name:  req.UserName,
+					Email: req.Email,
+				}
+				if err = tx.Create(user).Error; err != nil {
+					return err
+				}
+
+				var password model.Password
+				password.UserID = user.ID
+
+				passwordPlainText := c.PostForm("password")
+
+				hashPassword, err := cryto.HashPassword(passwordPlainText)
+				if err != nil {
+					return err
+				}
+				password.Password = hashPassword
+
+				if err = tx.Create(&password).Error; err != nil {
+					return err
+				}
+
+				// 设置 session
+				session := sessions.Default(c)
+				session.Set("username", user.Name)
+				session.Set("user_id", user.ID)
+				err = session.Save()
+				if err != nil {
+					return err
+				}
+
+				return nil
+			})
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				return
+			}
+			c.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("%s register success", req.UserName)})
+
+		default:
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request format"})
+		}
+	}
+}
