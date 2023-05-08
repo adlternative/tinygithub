@@ -107,7 +107,6 @@ func Run(store *storage.Storage, dbEngine *model.DBEngine) error {
 				{
 					v2UserNameGroup.GET("", user.UserInfoV2(dbEngine))
 					v2UserNameGroup.OPTIONS("", DefaultOptions)
-					v2UserNameGroup.GET("/repositories", repo.ShowRepos(dbEngine))
 				}
 			}
 		}

@@ -38,11 +38,23 @@ func Home(db *model.DBEngine) gin.HandlerFunc {
 // UserInfoV2 show user information
 func UserInfoV2(db *model.DBEngine) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		userName := c.Param("username")
 		var user model.User
-		if err := db.Where("name = ?", userName).First(&user).Error; err != nil {
-			c.HTML(http.StatusNotFound, "404.html", nil)
-			return
+		userName := c.Param("username")
+		tab := c.Query("tab")
+		if tab == "repositories" {
+			if err := db.Preload("Repositories").Where("name = ?", userName).First(&user).Error; err != nil {
+				c.JSON(http.StatusNotFound, gin.H{
+					"error": err.Error(),
+				})
+				return
+			}
+		} else {
+			if err := db.Where("name = ?", userName).First(&user).Error; err != nil {
+				c.JSON(http.StatusNotFound, gin.H{
+					"error": err.Error(),
+				})
+				return
+			}
 		}
 		c.JSON(http.StatusOK, gin.H{
 			"user": user,
