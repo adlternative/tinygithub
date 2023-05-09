@@ -9,6 +9,7 @@ import (
 	"github.com/adlternative/tinygithub/pkg/service/home"
 	"github.com/adlternative/tinygithub/pkg/service/pack"
 	"github.com/adlternative/tinygithub/pkg/service/repo"
+	"github.com/adlternative/tinygithub/pkg/service/tree"
 	"github.com/adlternative/tinygithub/pkg/service/user"
 	"github.com/adlternative/tinygithub/pkg/storage"
 	"github.com/gin-contrib/sessions"
@@ -109,6 +110,21 @@ func Run(store *storage.Storage, dbEngine *model.DBEngine) error {
 					v2UserNameGroup.OPTIONS("", DefaultOptions)
 				}
 			}
+			v2UserNameGroup := v2Group.Group("/:username")
+			v2RepoGroup := v2UserNameGroup.Group("/:reponame")
+			{
+				treeGroup := v2RepoGroup.Group("/tree")
+				{
+					treeGroup.GET("", tree.Show(dbEngine, store))
+					treeGroup.OPTIONS("", DefaultOptions)
+				}
+				blobGroup := v2RepoGroup.Group("/blob")
+				{
+					blobGroup.GET("", blob.ShowV2(dbEngine, store))
+					blobGroup.OPTIONS("", DefaultOptions)
+				}
+			}
+
 		}
 	}
 
