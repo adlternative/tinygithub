@@ -48,6 +48,9 @@ func UserInfoV2(db *model.DBEngine) gin.HandlerFunc {
 				})
 				return
 			}
+			c.JSON(http.StatusOK, gin.H{
+				"repositories": user.Repositories,
+			})
 		} else {
 			if err := db.Where("name = ?", userName).First(&user).Error; err != nil {
 				c.JSON(http.StatusNotFound, gin.H{
@@ -55,9 +58,11 @@ func UserInfoV2(db *model.DBEngine) gin.HandlerFunc {
 				})
 				return
 			}
+			c.JSON(http.StatusOK, gin.H{
+				"name":  user.Name,
+				"email": user.Email,
+			})
 		}
-		c.JSON(http.StatusOK, gin.H{
-			"user": user,
-		})
+
 	}
 }
