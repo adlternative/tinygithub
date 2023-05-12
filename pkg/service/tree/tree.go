@@ -61,10 +61,10 @@ func Show(db *model.DBEngine, store *storage.Storage) gin.HandlerFunc {
 		}
 		// git rev-parse
 		isEmpty, _ := gitRepo.IsRepositoryEmpty(c, repo.Path())
-		var entries []*tree.Entry
+		var entries []*tree.BlameTreeEntry
 		if !isEmpty {
 			// git ls-tree
-			entries, err = tree.ParseTree(c, repo.Path(), revision, path)
+			entries, err = tree.ParseBlameTree(c, repo.Path(), revision, path)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{
 					"error": err.Error(),
@@ -73,26 +73,10 @@ func Show(db *model.DBEngine, store *storage.Storage) gin.HandlerFunc {
 			}
 		}
 
-		type serializeTreeEntry struct {
-			Mode string
-			Type string
-			Oid  string
-			Path string
-		}
-		var serializeEntries []*serializeTreeEntry
-		for _, entry := range entries {
-			serializeEntries = append(serializeEntries, &serializeTreeEntry{
-				Mode: entry.Mode.String(),
-				Type: entry.Type.String(),
-				Oid:  entry.Oid.String(),
-				Path: entry.Path,
-			})
-		}
-
 		c.JSON(http.StatusOK, gin.H{
-			"revision":    revision,
-			"treePath":    path,
-			"treeEntries": serializeEntries,
+			"revision":     revision,
+			"tree_path":    path,
+			"tree_entries": entries,
 		})
 	}
 }

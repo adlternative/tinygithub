@@ -2,6 +2,7 @@ package object
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 )
 
@@ -31,6 +32,10 @@ func (m Mode) String() string {
 	default:
 		return "UnknownMode"
 	}
+}
+
+func (m Mode) MarshalJSON() ([]byte, error) {
+	return json.Marshal(m.String())
 }
 
 func ParseMode(str string) (Mode, error) {
@@ -75,6 +80,10 @@ func (t Type) String() string {
 	}
 }
 
+func (t Type) MarshalJSON() ([]byte, error) {
+	return json.Marshal(t.String())
+}
+
 func ParseType(typeString string) (Type, error) {
 	switch typeString {
 	case "blob":
@@ -109,4 +118,8 @@ func ParseID(sha1hex string) (ID, error) {
 
 func (id ID) String() string {
 	return hex.EncodeToString(id[:Sha1Length])
+}
+
+func (id ID) MarshalJSON() ([]byte, error) {
+	return json.Marshal(id.String())
 }
