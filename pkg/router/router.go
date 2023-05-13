@@ -10,6 +10,7 @@ import (
 	"github.com/adlternative/tinygithub/pkg/service/home"
 	"github.com/adlternative/tinygithub/pkg/service/pack"
 	"github.com/adlternative/tinygithub/pkg/service/repo"
+	"github.com/adlternative/tinygithub/pkg/service/tags"
 	"github.com/adlternative/tinygithub/pkg/service/tree"
 	"github.com/adlternative/tinygithub/pkg/service/user"
 	"github.com/adlternative/tinygithub/pkg/storage"
@@ -121,6 +122,11 @@ func Run(store *storage.Storage, dbEngine *model.DBEngine) error {
 				{
 					branchesGroup.GET("", branches.Show(dbEngine, store))
 					branchesGroup.OPTIONS("", DefaultOptions)
+				}
+				tagsGroup := v2RepoGroup.Group("/tags")
+				{
+					tagsGroup.GET("", tags.Show(dbEngine, store))
+					tagsGroup.OPTIONS("", DefaultOptions)
 				}
 				treeGroup := v2RepoGroup.Group("/tree")
 				{
