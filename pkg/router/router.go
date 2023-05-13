@@ -113,6 +113,9 @@ func Run(store *storage.Storage, dbEngine *model.DBEngine) error {
 			v2UserNameGroup := v2Group.Group("/:username")
 			v2RepoGroup := v2UserNameGroup.Group("/:reponame")
 			{
+				v2RepoGroup.GET("", repo.ShowRepo(dbEngine, store))
+				v2RepoGroup.OPTIONS("", DefaultOptions)
+
 				treeGroup := v2RepoGroup.Group("/tree")
 				{
 					treeGroup.GET("", tree.Show(dbEngine, store))
