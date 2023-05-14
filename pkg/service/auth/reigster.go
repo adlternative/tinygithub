@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"regexp"
@@ -30,6 +31,9 @@ func isReserved(s string) bool {
 func RegisterPage(c *gin.Context) {
 	c.HTML(http.StatusOK, "register.html", nil)
 }
+
+var UserNameAlreadyExistsError = errors.New("user name already exists")
+var UserEmailAlreadyExistsError = errors.New("user email already exists")
 
 // Register take the account and password to create a new user
 func Register(db *model.DBEngine) gin.HandlerFunc {
@@ -153,13 +157,13 @@ func RegisterV2(db *model.DBEngine) gin.HandlerFunc {
 				if err != nil && err != gorm.ErrRecordNotFound {
 					return err
 				} else if err == nil {
-					return fmt.Errorf("existed user with username %s", existedUser.Name)
+					return UserNameAlreadyExistsError
 				}
 				err = tx.Where("email = ?", req.Email).First(&existedUser).Error
 				if err != nil && err != gorm.ErrRecordNotFound {
 					return err
 				} else if err == nil {
-					return fmt.Errorf("existed user with email %s", existedUser.Email)
+					return UserEmailAlreadyExistsError
 				}
 
 				user := &model.User{
@@ -197,6 +201,10 @@ func RegisterV2(db *model.DBEngine) gin.HandlerFunc {
 				return nil
 			})
 			if err != nil {
+				if errors.Is(err, UserNameAlreadyExistsError) || errors.Is(err, UserEmailAlreadyExistsError) {
+					c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+					return
+				}
 				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 				return
 			}
