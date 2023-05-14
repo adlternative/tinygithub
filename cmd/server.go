@@ -38,7 +38,7 @@ func init() {
 	serverCmd.PersistentFlags().String(config.DBName, "", "database name")
 	serverCmd.PersistentFlags().Bool(config.DBSync, false, "database sync")
 	serverCmd.PersistentFlags().String(config.ServerIp, "127.0.0.1", "server ip")
-	serverCmd.PersistentFlags().String(config.ServerPort, "8080", "server port")
+	serverCmd.PersistentFlags().String(config.ServerPort, "8083", "server port")
 	serverCmd.PersistentFlags().String(config.SessionSecret, "", "session secret")
 	serverCmd.PersistentFlags().String(config.StaticResourcePath, "./static", "static resource path")
 
