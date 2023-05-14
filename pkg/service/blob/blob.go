@@ -158,19 +158,6 @@ func ShowV2(db *model.DBEngine, store *storage.Storage) gin.HandlerFunc {
 
 		// 判断文件类型
 		contentType := http.DetectContentType(blobContents)
-		//isBinary := false
-		switch {
-		case strings.HasPrefix(contentType, "text/"):
-			// 文本类型文件，直接显示
-		case strings.HasPrefix(contentType, "image/"):
-			// 图片类型文件，返回图片
-			break
-		default:
-			// 其他类型文件，显示"二进制文件"
-			contentType = "text/plain"
-			//isBinary = true
-			blobContents = []byte("binary file")
-		}
 		c.Data(http.StatusOK, contentType, blobContents)
 	}
 }
