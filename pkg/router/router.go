@@ -115,26 +115,29 @@ func Run(store *storage.Storage, dbEngine *model.DBEngine) error {
 					v2UserNameGroup.GET("", user.UserInfoV2(dbEngine))
 				}
 			}
-			v2UserNameGroup := v2Group.Group("/:username")
-			v2RepoGroup := v2UserNameGroup.Group("/:reponame")
-			{
-				v2RepoGroup.GET("", repo.ShowRepo(dbEngine, store))
 
-				branchesGroup := v2RepoGroup.Group("/branches")
+			v2UserNameGroup := v2Group.Group("/:username")
+			{
+				v2RepoGroup := v2UserNameGroup.Group("/:reponame")
 				{
-					branchesGroup.GET("", branches.Show(dbEngine, store))
-				}
-				tagsGroup := v2RepoGroup.Group("/tags")
-				{
-					tagsGroup.GET("", tags.Show(dbEngine, store))
-				}
-				treeGroup := v2RepoGroup.Group("/tree")
-				{
-					treeGroup.GET("", tree.Show(dbEngine, store))
-				}
-				blobGroup := v2RepoGroup.Group("/blob")
-				{
-					blobGroup.GET("", blob.ShowV2(dbEngine, store))
+					v2RepoGroup.GET("", repo.ShowRepo(dbEngine, store))
+
+					branchesGroup := v2RepoGroup.Group("/branches")
+					{
+						branchesGroup.GET("", branches.Show(dbEngine, store))
+					}
+					tagsGroup := v2RepoGroup.Group("/tags")
+					{
+						tagsGroup.GET("", tags.Show(dbEngine, store))
+					}
+					treeGroup := v2RepoGroup.Group("/tree")
+					{
+						treeGroup.GET("", tree.Show(dbEngine, store))
+					}
+					blobGroup := v2RepoGroup.Group("/blob")
+					{
+						blobGroup.GET("", blob.ShowV2(dbEngine, store))
+					}
 				}
 			}
 
