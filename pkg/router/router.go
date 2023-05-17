@@ -72,6 +72,10 @@ func Run(store *storage.Storage, dbEngine *model.DBEngine) error {
 	r.NoRoute(func(c *gin.Context) {
 		c.HTML(http.StatusNotFound, "404.html", nil)
 	})
+	r.Use(DefaultCORS())
+
+	// default options handle
+	r.OPTIONS("/*path", DefaultOptions)
 
 	sessionSecret := viper.GetString(config.SessionSecret)
 	if sessionSecret == "" {
@@ -94,18 +98,14 @@ func Run(store *storage.Storage, dbEngine *model.DBEngine) error {
 	r.GET("/", home.Page(dbEngine))
 
 	apiGroup := r.Group("/api")
-	apiGroup.Use(DefaultCORS())
 	{
 		v2Group := apiGroup.Group("/v2")
 		{
 			v2AuthGroup := v2Group.Group("/auth")
 			{
 				v2AuthGroup.POST("/login", auth.LoginV2(dbEngine))
-				v2AuthGroup.OPTIONS("/login", DefaultOptions)
 				v2AuthGroup.POST("/register", auth.RegisterV2(dbEngine))
-				v2AuthGroup.OPTIONS("/register", DefaultOptions)
 				v2AuthGroup.GET("/logout", auth.LogoutV2(dbEngine))
-				v2AuthGroup.OPTIONS("/logout", DefaultOptions)
 
 			}
 			v2UserGroup := v2Group.Group("/users")
@@ -113,34 +113,28 @@ func Run(store *storage.Storage, dbEngine *model.DBEngine) error {
 				v2UserNameGroup := v2UserGroup.Group("/:username")
 				{
 					v2UserNameGroup.GET("", user.UserInfoV2(dbEngine))
-					v2UserNameGroup.OPTIONS("", DefaultOptions)
 				}
 			}
 			v2UserNameGroup := v2Group.Group("/:username")
 			v2RepoGroup := v2UserNameGroup.Group("/:reponame")
 			{
 				v2RepoGroup.GET("", repo.ShowRepo(dbEngine, store))
-				v2RepoGroup.OPTIONS("", DefaultOptions)
 
 				branchesGroup := v2RepoGroup.Group("/branches")
 				{
 					branchesGroup.GET("", branches.Show(dbEngine, store))
-					branchesGroup.OPTIONS("", DefaultOptions)
 				}
 				tagsGroup := v2RepoGroup.Group("/tags")
 				{
 					tagsGroup.GET("", tags.Show(dbEngine, store))
-					tagsGroup.OPTIONS("", DefaultOptions)
 				}
 				treeGroup := v2RepoGroup.Group("/tree")
 				{
 					treeGroup.GET("", tree.Show(dbEngine, store))
-					treeGroup.OPTIONS("", DefaultOptions)
 				}
 				blobGroup := v2RepoGroup.Group("/blob")
 				{
 					blobGroup.GET("", blob.ShowV2(dbEngine, store))
-					blobGroup.OPTIONS("", DefaultOptions)
 				}
 			}
 
