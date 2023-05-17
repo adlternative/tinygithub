@@ -110,6 +110,8 @@ func Run(store *storage.Storage, dbEngine *model.DBEngine) error {
 			}
 			v2UserGroup := v2Group.Group("/users")
 			{
+				v2UserGroup.GET("/current", user.CurrentUserInfo(dbEngine))
+
 				v2UserNameGroup := v2UserGroup.Group("/:username")
 				{
 					v2UserNameGroup.GET("", user.UserInfoV2(dbEngine))

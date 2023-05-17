@@ -66,3 +66,27 @@ func UserInfoV2(db *model.DBEngine) gin.HandlerFunc {
 
 	}
 }
+
+func CurrentUserInfo(db *model.DBEngine) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		session := sessions.Default(c)
+
+		userName, ok1 := session.Get("username").(string)
+		userID, ok2 := session.Get("user_id").(uint)
+		var user model.User
+		if !ok1 || !ok2 {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "unknown current user"})
+			return
+		}
+		user.Name = userName
+		user.ID = userID
+
+		if err := db.First(&user).Error; err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "not such user in the server"})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"user": user,
+		})
+	}
+}
