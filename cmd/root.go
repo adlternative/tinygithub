@@ -36,7 +36,7 @@ func init() {
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	rootCmd.PersistentFlags().String(config.LogLevel, "info", "log level")
 	rootCmd.PersistentFlags().String(config.LogFile, "", "log file")
-	rootCmd.PersistentFlags().String(config.GitBinPath, "", "git bin path")
+	rootCmd.PersistentFlags().String(config.GitBinPath, "/usr/bin/git", "git bin path")
 	rootCmd.PersistentFlags().StringVar(&configFile, "config", "config.json", "config file")
 
 	if err := viper.BindPFlags(rootCmd.PersistentFlags()); err != nil {
@@ -52,7 +52,7 @@ func initConfig() {
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_", "-", "_"))
 
 	if err := viper.ReadInConfig(); err != nil {
-		log.Fatalf("read config failed with %v", err)
+		log.Info("no config file specified")
 	}
 
 	config.InitLog()

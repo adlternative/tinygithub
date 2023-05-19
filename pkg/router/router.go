@@ -84,7 +84,13 @@ func Run(store *storage.Storage, dbEngine *model.DBEngine) error {
 	sessionMiddleWare := sessions.Sessions("tinygithub-session", cookie.NewStore([]byte(sessionSecret)))
 
 	r.Use(Logger(), gin.Recovery(), sessionMiddleWare)
-	r.LoadHTMLGlob("pkg/template/*")
+
+	htmlTemplatePath := viper.GetString(config.HtmlTemplatePath)
+
+	if !isDirectory(htmlTemplatePath) {
+		return fmt.Errorf("htmlTemplatePath %s is not a directory", htmlTemplatePath)
+	}
+	r.LoadHTMLGlob(fmt.Sprintf("%s/*", htmlTemplatePath))
 
 	staticResourcePath := viper.GetString(config.StaticResourcePath)
 

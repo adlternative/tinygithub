@@ -25,6 +25,7 @@ const (
 	SessionSecret = "session-secret"
 
 	StaticResourcePath = "static-resource-path"
+	HtmlTemplatePath   = "html-template-path"
 )
 
 func InitLog() {

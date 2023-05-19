@@ -30,18 +30,19 @@ func init() {
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	serverCmd.PersistentFlags().String(config.Storage, "", "git repositories storage path")
-	serverCmd.PersistentFlags().String(config.DBUser, "", "database user")
-	serverCmd.PersistentFlags().String(config.DBPassword, "", "database password")
-	serverCmd.PersistentFlags().String(config.DBIp, "", "database Ip")
-	serverCmd.PersistentFlags().String(config.DBPort, "", "database port")
-	serverCmd.PersistentFlags().String(config.DBName, "", "database name")
+	serverCmd.PersistentFlags().String(config.Storage, "/app/storage", "git repositories storage path")
+	serverCmd.PersistentFlags().String(config.DBUser, "root", "database user")
+	serverCmd.PersistentFlags().String(config.DBPassword, "123456", "database password")
+	serverCmd.PersistentFlags().String(config.DBIp, "127.0.0.1", "database Ip")
+	serverCmd.PersistentFlags().String(config.DBPort, "3306", "database port")
+	serverCmd.PersistentFlags().String(config.DBName, "tinygithub", "database name")
 	serverCmd.PersistentFlags().Bool(config.DBSync, false, "database sync")
 	serverCmd.PersistentFlags().String(config.ServerIp, "127.0.0.1", "server ip")
 	serverCmd.PersistentFlags().String(config.ServerPort, "8083", "server port")
-	serverCmd.PersistentFlags().String(config.SessionSecret, "", "session secret")
+	serverCmd.PersistentFlags().String(config.SessionSecret, "secret", "session secret")
 	serverCmd.PersistentFlags().String(config.StaticResourcePath, "./static", "static resource path")
-
+	serverCmd.PersistentFlags().String(config.HtmlTemplatePath, "./pkg/template/*", "html template path")
+	
 	if err := viper.BindPFlags(serverCmd.PersistentFlags()); err != nil {
 		log.Fatalf("viper bind serverCmd flags failed with %v", err)
 	}
