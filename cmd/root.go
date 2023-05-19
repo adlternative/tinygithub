@@ -5,6 +5,7 @@ package cmd
 
 import (
 	"os"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -48,6 +49,7 @@ func init() {
 func initConfig() {
 	viper.SetConfigFile(configFile)
 	viper.AutomaticEnv()
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_", "-", "_"))
 
 	if err := viper.ReadInConfig(); err != nil {
 		log.Fatalf("read config failed with %v", err)
