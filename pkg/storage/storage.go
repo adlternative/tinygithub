@@ -112,6 +112,7 @@ func (s *Storage) RemoveRepository(ctx *gin.Context, userName, repoName string) 
 		return err
 	}
 
+	log.Infof("storage removeRepository %s", repoPath)
 	err = os.RemoveAll(repoPath)
 	return err
 }

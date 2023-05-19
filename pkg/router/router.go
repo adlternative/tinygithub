@@ -121,6 +121,7 @@ func Run(store *storage.Storage, dbEngine *model.DBEngine) error {
 			v2ReposGroup := v2Group.Group("/repos")
 			{
 				v2ReposGroup.POST("/new", repo.CreateV2(dbEngine, store))
+				v2ReposGroup.POST("/delete", repo.DeleteV2(dbEngine, store))
 			}
 
 			v2UserNameGroup := v2Group.Group("/:username")
