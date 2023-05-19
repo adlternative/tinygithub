@@ -42,7 +42,8 @@ func init() {
 	serverCmd.PersistentFlags().String(config.SessionSecret, "secret", "session secret")
 	serverCmd.PersistentFlags().String(config.StaticResourcePath, "./static", "static resource path")
 	serverCmd.PersistentFlags().String(config.HtmlTemplatePath, "./pkg/template/*", "html template path")
-	
+	serverCmd.PersistentFlags().String(config.APIVersion, "v2", "api version")
+
 	if err := viper.BindPFlags(serverCmd.PersistentFlags()); err != nil {
 		log.Fatalf("viper bind serverCmd flags failed with %v", err)
 	}

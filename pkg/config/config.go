@@ -26,6 +26,8 @@ const (
 
 	StaticResourcePath = "static-resource-path"
 	HtmlTemplatePath   = "html-template-path"
+
+	APIVersion = "api-version"
 )
 
 func InitLog() {

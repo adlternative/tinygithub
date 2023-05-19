@@ -58,6 +58,7 @@ func Show(db *model.DBEngine, store *storage.Storage) gin.HandlerFunc {
 			c.JSON(http.StatusNotFound, gin.H{
 				"error": fmt.Sprintf("user %s repo %s not found", userName, repoName),
 			})
+			return
 		}
 		// git rev-parse
 		isEmpty, _ := gitRepo.IsRepositoryEmpty(c, repo.Path())

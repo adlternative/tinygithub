@@ -11,8 +11,5 @@
   "server-ip": "127.0.0.1",
   "server-port": "8083",
 
-  "session-secret": "secret",
-
-  "static-resource-path": "/home/adl/tinygithub/static",
-  "html-template-path":  "/home/adl/tinygithub/pkg/template"
+  "session-secret": "secret"
 }

@@ -69,9 +69,6 @@ func Run(store *storage.Storage, dbEngine *model.DBEngine) error {
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.New()
 
-	r.NoRoute(func(c *gin.Context) {
-		c.HTML(http.StatusNotFound, "404.html", nil)
-	})
 	r.Use(DefaultCORS())
 
 	// default options handle
@@ -85,119 +82,124 @@ func Run(store *storage.Storage, dbEngine *model.DBEngine) error {
 
 	r.Use(Logger(), gin.Recovery(), sessionMiddleWare)
 
-	htmlTemplatePath := viper.GetString(config.HtmlTemplatePath)
+	if viper.GetString(config.APIVersion) != "v2" {
+		r.NoRoute(func(c *gin.Context) {
+			c.HTML(http.StatusNotFound, "404.html", nil)
+		})
 
-	if !isDirectory(htmlTemplatePath) {
-		return fmt.Errorf("htmlTemplatePath %s is not a directory", htmlTemplatePath)
-	}
-	r.LoadHTMLGlob(fmt.Sprintf("%s/*", htmlTemplatePath))
+		r.GET("/", home.Page(dbEngine))
 
-	staticResourcePath := viper.GetString(config.StaticResourcePath)
+		htmlTemplatePath := viper.GetString(config.HtmlTemplatePath)
 
-	if !isDirectory(staticResourcePath) {
-		return fmt.Errorf("staticResourcePath %s is not a directory", staticResourcePath)
-	}
+		if !isDirectory(htmlTemplatePath) {
+			return fmt.Errorf("htmlTemplatePath %s is not a directory", htmlTemplatePath)
+		}
+		r.LoadHTMLGlob(fmt.Sprintf("%s/*", htmlTemplatePath))
 
-	r.Static("/static", staticResourcePath)
-	r.StaticFile("/favicon.icon", staticResourcePath+"/favicon.icon")
+		staticResourcePath := viper.GetString(config.StaticResourcePath)
 
-	r.GET("/", home.Page(dbEngine))
+		if !isDirectory(staticResourcePath) {
+			return fmt.Errorf("staticResourcePath %s is not a directory", staticResourcePath)
+		}
 
-	apiGroup := r.Group("/api")
-	{
-		v2Group := apiGroup.Group("/v2")
+		r.Static("/static", staticResourcePath)
+		r.StaticFile("/favicon.icon", staticResourcePath+"/favicon.icon")
+
+		authGroup := r.Group("/user")
 		{
-			v2AuthGroup := v2Group.Group("/auth")
-			{
-				v2AuthGroup.POST("/login", auth.LoginV2(dbEngine))
-				v2AuthGroup.POST("/register", auth.RegisterV2(dbEngine))
-				v2AuthGroup.GET("/logout", auth.LogoutV2(dbEngine))
 
+			registerGroup := authGroup.Group("/register")
+			{
+				registerGroup.GET("", auth.RegisterPage)
+				registerGroup.POST("", auth.Register(dbEngine))
 			}
-			v2UserGroup := v2Group.Group("/users")
-			{
-				v2UserGroup.GET("/current", user.CurrentUserInfo(dbEngine))
 
-				v2UserNameGroup := v2UserGroup.Group("/:username")
+			loginGroup := authGroup.Group("/login")
+			{
+				loginGroup.GET("", auth.LoginPage)
+				loginGroup.POST("", auth.Login(dbEngine))
+			}
+
+			authGroup.GET("/logout", auth.Logout)
+		}
+
+		gitRepoGroup := r.Group("/:username/:reponame")
+		{
+			gitRepoGroup.GET("", repo.Home(dbEngine, store))
+			gitRepoGroup.GET("/tree/*treepath", repo.Home(dbEngine, store))
+			gitRepoGroup.GET("/blob/*blobpath", blob.Show(dbEngine, store))
+
+			gitRepoGroup.GET("/info/refs", pack.InfoRefs(store))
+			gitRepoGroup.POST("/git-upload-pack", pack.UploadPack(store))
+			gitRepoGroup.POST("/git-receive-pack", pack.ReceivePack(store))
+		}
+
+		r.GET("/:username", user.Home(dbEngine))
+
+		repoGroup := r.Group("/repos")
+		{
+			repoGroup.GET("/new", repo.CreatePage)
+			repoGroup.POST("/new", repo.Create(dbEngine, store))
+			repoGroup.POST("/delete", repo.Delete(dbEngine, store))
+
+			//repoGroup.Get("/:id", repo.Get(dbEngine))
+		}
+	} else {
+		apiGroup := r.Group("/api")
+		{
+			v2Group := apiGroup.Group("/v2")
+			{
+				v2AuthGroup := v2Group.Group("/auth")
 				{
-					v2UserNameGroup.GET("", user.UserInfoV2(dbEngine))
+					v2AuthGroup.POST("/login", auth.LoginV2(dbEngine))
+					v2AuthGroup.POST("/register", auth.RegisterV2(dbEngine))
+					v2AuthGroup.GET("/logout", auth.LogoutV2(dbEngine))
+
 				}
-			}
-
-			v2ReposGroup := v2Group.Group("/repos")
-			{
-				v2ReposGroup.POST("/new", repo.CreateV2(dbEngine, store))
-				v2ReposGroup.POST("/delete", repo.DeleteV2(dbEngine, store))
-			}
-
-			v2UserNameGroup := v2Group.Group("/:username")
-			{
-				v2RepoGroup := v2UserNameGroup.Group("/:reponame")
+				v2UserGroup := v2Group.Group("/users")
 				{
-					v2RepoGroup.GET("", repo.ShowRepo(dbEngine, store))
+					v2UserGroup.GET("/current", user.CurrentUserInfo(dbEngine))
 
-					branchesGroup := v2RepoGroup.Group("/branches")
+					v2UserNameGroup := v2UserGroup.Group("/:username")
 					{
-						branchesGroup.GET("", branches.Show(dbEngine, store))
-					}
-					tagsGroup := v2RepoGroup.Group("/tags")
-					{
-						tagsGroup.GET("", tags.Show(dbEngine, store))
-					}
-					treeGroup := v2RepoGroup.Group("/tree")
-					{
-						treeGroup.GET("", tree.Show(dbEngine, store))
-					}
-					blobGroup := v2RepoGroup.Group("/blob")
-					{
-						blobGroup.GET("", blob.ShowV2(dbEngine, store))
+						v2UserNameGroup.GET("", user.UserInfoV2(dbEngine))
 					}
 				}
+
+				v2ReposGroup := v2Group.Group("/repos")
+				{
+					v2ReposGroup.POST("/new", repo.CreateV2(dbEngine, store))
+					v2ReposGroup.POST("/delete", repo.DeleteV2(dbEngine, store))
+				}
+
+				v2UserNameGroup := v2Group.Group("/:username")
+				{
+					v2RepoGroup := v2UserNameGroup.Group("/:reponame")
+					{
+						v2RepoGroup.GET("", repo.ShowRepo(dbEngine, store))
+
+						branchesGroup := v2RepoGroup.Group("/branches")
+						{
+							branchesGroup.GET("", branches.Show(dbEngine, store))
+						}
+						tagsGroup := v2RepoGroup.Group("/tags")
+						{
+							tagsGroup.GET("", tags.Show(dbEngine, store))
+						}
+						treeGroup := v2RepoGroup.Group("/tree")
+						{
+							treeGroup.GET("", tree.Show(dbEngine, store))
+						}
+						blobGroup := v2RepoGroup.Group("/blob")
+						{
+							blobGroup.GET("", blob.ShowV2(dbEngine, store))
+						}
+					}
+				}
+
 			}
-
 		}
 	}
-
-	authGroup := r.Group("/user")
-	{
-
-		registerGroup := authGroup.Group("/register")
-		{
-			registerGroup.GET("", auth.RegisterPage)
-			registerGroup.POST("", auth.Register(dbEngine))
-		}
-
-		loginGroup := authGroup.Group("/login")
-		{
-			loginGroup.GET("", auth.LoginPage)
-			loginGroup.POST("", auth.Login(dbEngine))
-		}
-
-		authGroup.GET("/logout", auth.Logout)
-	}
-
-	gitRepoGroup := r.Group("/:username/:reponame")
-	{
-		gitRepoGroup.GET("", repo.Home(dbEngine, store))
-		gitRepoGroup.GET("/tree/*treepath", repo.Home(dbEngine, store))
-		gitRepoGroup.GET("/blob/*blobpath", blob.Show(dbEngine, store))
-
-		gitRepoGroup.GET("/info/refs", pack.InfoRefs(store))
-		gitRepoGroup.POST("/git-upload-pack", pack.UploadPack(store))
-		gitRepoGroup.POST("/git-receive-pack", pack.ReceivePack(store))
-	}
-
-	r.GET("/:username", user.Home(dbEngine))
-
-	repoGroup := r.Group("/repos")
-	{
-		repoGroup.GET("/new", repo.CreatePage)
-		repoGroup.POST("/new", repo.Create(dbEngine, store))
-		repoGroup.POST("/delete", repo.Delete(dbEngine, store))
-
-		//repoGroup.Get("/:id", repo.Get(dbEngine))
-	}
-
 	err := r.SetTrustedProxies([]string{"127.0.0.1"})
 	if err != nil {
 		return err
