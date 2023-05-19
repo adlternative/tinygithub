@@ -3,21 +3,15 @@ package auth
 import (
 	"errors"
 	"fmt"
-	"net/http"
-	"regexp"
-
+	"github.com/adlternative/tinygithub/pkg/utils"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"net/http"
 
 	"github.com/adlternative/tinygithub/pkg/model"
 	"github.com/adlternative/tinygithub/pkg/service/auth/cryto"
 )
-
-func isAlphanumeric(s string) bool {
-	re := regexp.MustCompile("^[a-zA-Z0-9]+$")
-	return re.MatchString(s)
-}
 
 func isReserved(s string) bool {
 	switch s {
@@ -40,7 +34,7 @@ func Register(db *model.DBEngine) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var user model.User
 
-		if err := c.ShouldBind(&user); err != nil || !isAlphanumeric(user.Name) {
+		if err := c.ShouldBind(&user); err != nil || !utils.IsAlphanumeric(user.Name) {
 			c.HTML(http.StatusBadRequest, "register.html", gin.H{"error": "invalid username or email"})
 			return
 		}
@@ -141,7 +135,7 @@ func RegisterV2(db *model.DBEngine) gin.HandlerFunc {
 				c.JSON(http.StatusBadRequest, gin.H{"error": err})
 			}
 
-			if !isAlphanumeric(req.UserName) {
+			if !utils.IsAlphanumeric(req.UserName) {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "invalid username or email"})
 				return
 			}
