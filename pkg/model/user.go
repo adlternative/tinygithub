@@ -7,8 +7,8 @@ import (
 type User struct {
 	gorm.Model
 
-	Name  string `gorm:"uniqueIndex;not null" form:"username" binding:"required"`
-	Email string `gorm:"uniqueIndex;not null" form:"email" binding:"required"`
+	Name  string `gorm:"uniqueIndex;not null;size:24" form:"username"`
+	Email string `gorm:"uniqueIndex;not null;size:24" form:"email"`
 
 	Repositories []Repository
 }
