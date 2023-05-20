@@ -53,7 +53,7 @@ func (s *Storage) valid() error {
 	fi, err := os.Stat(s.path)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return fmt.Errorf("storage path is not exist: %w", err)
+			return os.MkdirAll(s.path, 0750)
 		} else {
 			return fmt.Errorf("bad storage path: %w", err)
 		}
