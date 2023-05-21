@@ -7,7 +7,7 @@ WORKDIR /app
 # 更新系统并安装 Git
 RUN apt-get update && apt-get install -y git
 
-RUN git clone https://github.com/adlternative/tinygithub.git && \
+RUN git clone --depth=1 https://github.com/adlternative/tinygithub.git && \
     cd tinygithub && \
     go install
 
