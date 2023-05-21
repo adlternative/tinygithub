@@ -21,6 +21,8 @@ services:
       - STORAGE=${STORAGE}
     depends_on:
       - db
+    ports:
+      - "8083:8083"
 
 volumes:
   db:
