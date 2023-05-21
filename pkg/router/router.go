@@ -205,7 +205,10 @@ func Run(store *storage.Storage, dbEngine *model.DBEngine) error {
 		return err
 	}
 
-	if err = r.Run(fmt.Sprintf("%s:%s", viper.GetString(config.ServerIp), viper.GetString(config.ServerPort))); err != nil {
+	serverAddr := fmt.Sprintf("%s:%s", viper.GetString(config.ServerIp), viper.GetString(config.ServerPort))
+	log.Infof("tinygithub server run on %s", serverAddr)
+
+	if err = r.Run(serverAddr); err != nil {
 		return err
 	}
 	return nil
