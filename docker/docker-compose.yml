@@ -19,6 +19,7 @@ services:
       - DB_USER=${MYSQL_USER}
       - DB_PASSWORD=${MYSQL_PASSWORD}
       - STORAGE=${STORAGE}
+      - SERVER_IP=${SERVER_IP}
     depends_on:
       - db
     ports:
