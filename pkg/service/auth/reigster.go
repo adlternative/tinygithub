@@ -171,9 +171,7 @@ func RegisterV2(db *model.DBEngine) gin.HandlerFunc {
 				var password model.Password
 				password.UserID = user.ID
 
-				passwordPlainText := c.PostForm("password")
-
-				hashPassword, err := cryto.HashPassword(passwordPlainText)
+				hashPassword, err := cryto.HashPassword(req.Password)
 				if err != nil {
 					return err
 				}
