@@ -1,11 +1,21 @@
 ### TinyGithub
 
-![resource/logo.png](resource/logo.png)
-
+<div style="text-align:center;">
+  <img src="resource/logo.png" alt="Logo" width="256" height="256">
+</div>
 
 A tiny git server used for learning git principle.
 
-### How to Use
+### Build
+
+See [docker/README.md](docker/README.md)
+```shell
+cd docker
+make build
+docker-compose up -d
+```
+
+### How to Dev it
 
 #### golang git server
 - [tinygithub](https://github.com/adlternative/tinygithub)
