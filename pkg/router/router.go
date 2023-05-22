@@ -145,6 +145,13 @@ func Run(store *storage.Storage, dbEngine *model.DBEngine) error {
 			//repoGroup.Get("/:id", repo.Get(dbEngine))
 		}
 	} else {
+		gitRepoGroup := r.Group("/:username/:reponame")
+		{
+			gitRepoGroup.GET("/info/refs", pack.InfoRefs(store))
+			gitRepoGroup.POST("/git-upload-pack", pack.UploadPack(store))
+			gitRepoGroup.POST("/git-receive-pack", pack.ReceivePack(store))
+		}
+
 		apiGroup := r.Group("/api")
 		{
 			v2Group := apiGroup.Group("/v2")
