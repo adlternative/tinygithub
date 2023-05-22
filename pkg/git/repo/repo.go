@@ -11,8 +11,8 @@ func IsRepositoryEmpty(ctx context.Context, repoPath string) (bool, error) {
 	var stderrBuf strings.Builder
 	var stdoutBuf strings.Builder
 
-	gitCmd := cmd.NewGitCommand("rev-parse").WithGitDir(repoPath).
-		WithArgs("HEAD").
+	gitCmd := cmd.NewGitCommand("rev-list").WithGitDir(repoPath).
+		WithOptions("--max-count=1", "--all").
 		WithStdout(&stdoutBuf).
 		WithStderr(&stderrBuf)
 
