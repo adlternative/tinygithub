@@ -1,7 +1,10 @@
-.DEFAULT_GOAL := build
-.PHONY: build clean
+.DEFAULT_GOAL := docker-compose
+.PHONY: docker-build docker-clean
 
-build:
+docker-compose: frontend-build
+	docker-compose --env-file=./docker-compose.env build
+
+frontend-build:
 	mkdir -p build && \
 	cd build && \
 	git clone --depth=1 https://github.com/adlternative/tinygithub-frontend.git && \

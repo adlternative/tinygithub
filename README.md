@@ -8,11 +8,9 @@ A tiny git server used for learning git principle.
 
 ### Build
 
-See [docker/README.md](docker/README.md)
 ```shell
-cd docker
-make build
-docker-compose up -d
+make
+docker-compose --env-file=./docker-compose.env up
 ```
 
 ### How to Dev it
