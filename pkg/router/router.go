@@ -82,7 +82,7 @@ func Run(store *storage.Storage, dbEngine *model.DBEngine) error {
 
 	r.Use(Logger(), gin.Recovery(), sessionMiddleWare)
 
-	if viper.GetString(config.APIVersion) != "v2" {
+	if viper.GetString(config.APIVersion) == "v1" {
 		r.NoRoute(func(c *gin.Context) {
 			c.HTML(http.StatusNotFound, "404.html", nil)
 		})
