@@ -3,6 +3,7 @@ module github.com/adlternative/tinygithub
 go 1.20
 
 require (
+	github.com/elastic/go-elasticsearch/v8 v8.4.0-alpha.1.0.20230525132218-317dd3ac737f
 	github.com/gin-contrib/sessions v0.0.5
 	github.com/gin-gonic/gin v1.9.0
 	github.com/git-lfs/pktline v0.0.0-20230103162542-ca444d533ef1
@@ -21,6 +22,7 @@ require (
 	github.com/bytedance/sonic v1.8.0 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/elastic/elastic-transport-go/v8 v8.0.0-20230329154755-1a3c63de0db6 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect

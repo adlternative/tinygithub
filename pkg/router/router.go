@@ -10,6 +10,7 @@ import (
 	"github.com/adlternative/tinygithub/pkg/service/home"
 	"github.com/adlternative/tinygithub/pkg/service/pack"
 	"github.com/adlternative/tinygithub/pkg/service/repo"
+	"github.com/adlternative/tinygithub/pkg/service/search"
 	"github.com/adlternative/tinygithub/pkg/service/tags"
 	"github.com/adlternative/tinygithub/pkg/service/tree"
 	"github.com/adlternative/tinygithub/pkg/service/user"
@@ -203,9 +204,11 @@ func Run(store *storage.Storage, dbEngine *model.DBEngine) error {
 						}
 					}
 				}
-
+				v2Group.POST("/index", search.Index(dbEngine))
+				v2Group.GET("/search", search.Query(dbEngine))
 			}
 		}
+
 	}
 	err := r.SetTrustedProxies([]string{"127.0.0.1"})
 	if err != nil {
