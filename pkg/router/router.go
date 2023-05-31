@@ -180,6 +180,15 @@ func Run(store *storage.Storage, dbEngine *model.DBEngine) error {
 					v2ReposGroup.POST("/delete", repo.DeleteV2(dbEngine, store))
 				}
 
+				v2SearchTestGroup := v2Group.Group("/_search_test")
+				{
+					v2SearchTestGroup.POST("/index", search.CreateIndex(dbEngine))
+					v2SearchTestGroup.DELETE("/index", search.DeleteIndex(dbEngine))
+
+					v2SearchTestGroup.POST("/docs", search.CreateDocs(dbEngine))
+					v2SearchTestGroup.POST("/search", search.QueryDocs(dbEngine))
+				}
+
 				v2UserNameGroup := v2Group.Group("/:username")
 				{
 					v2RepoGroup := v2UserNameGroup.Group("/:reponame")
@@ -204,8 +213,6 @@ func Run(store *storage.Storage, dbEngine *model.DBEngine) error {
 						}
 					}
 				}
-				v2Group.POST("/index", search.Index(dbEngine))
-				v2Group.GET("/search", search.Query(dbEngine))
 			}
 		}
 
