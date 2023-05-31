@@ -2,6 +2,7 @@ package repo
 
 import (
 	"fmt"
+	service_manager "github.com/adlternative/tinygithub/pkg/manager"
 	"github.com/adlternative/tinygithub/pkg/model"
 	"github.com/adlternative/tinygithub/pkg/storage"
 	"github.com/gin-contrib/sessions"
@@ -29,7 +30,7 @@ type DeleteRequest struct {
 // data again during the database recovery process.
 // This process should be delegated to an external stable
 // storage to record the task, such as Redis or message queues.
-func Delete(db *model.DBEngine, store *storage.Storage) gin.HandlerFunc {
+func Delete(manager *service_manager.ServiceManager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		log.Info("repo.Delete called")
 		var req DeleteRequest
@@ -37,13 +38,14 @@ func Delete(db *model.DBEngine, store *storage.Storage) gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-
+		store := manager.Storage()
 		storeRepo, err := store.GetRepository(req.Owner, req.Repo)
 		if err != nil {
 			return
 		}
 		backUpPath := storeRepo.Path() + ".backup"
 
+		db := manager.DBEngine()
 		// remove from db
 		err = db.Transaction(func(txn *gorm.DB) error {
 			// Find the user by name
@@ -99,7 +101,7 @@ type DeleteRequestV2 struct {
 	RepoName string `json:"reponame"`
 }
 
-func DeleteV2(db *model.DBEngine, store *storage.Storage) gin.HandlerFunc {
+func DeleteV2(manager *service_manager.ServiceManager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req DeleteRequestV2
 		if err := c.BindJSON(&req); err != nil {
@@ -120,6 +122,7 @@ func DeleteV2(db *model.DBEngine, store *storage.Storage) gin.HandlerFunc {
 		}
 
 		// remove from db
+		db := manager.DBEngine()
 		err := db.Transaction(func(txn *gorm.DB) error {
 			var (
 				user model.User
@@ -139,6 +142,7 @@ func DeleteV2(db *model.DBEngine, store *storage.Storage) gin.HandlerFunc {
 			}
 
 			// remove git storage
+			store := manager.Storage()
 			if err = store.RemoveRepository(c, userName, req.RepoName); err != nil {
 				return err
 			}

@@ -3,6 +3,7 @@ package auth
 import (
 	"errors"
 	"fmt"
+	service_manager "github.com/adlternative/tinygithub/pkg/manager"
 	"github.com/adlternative/tinygithub/pkg/utils"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -30,7 +31,7 @@ var UserNameAlreadyExistsError = errors.New("user name already exists")
 var UserEmailAlreadyExistsError = errors.New("user email already exists")
 
 // Register take the account and password to create a new user
-func Register(db *model.DBEngine) gin.HandlerFunc {
+func Register(manager *service_manager.ServiceManager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var user model.User
 
@@ -42,6 +43,8 @@ func Register(db *model.DBEngine) gin.HandlerFunc {
 			c.HTML(http.StatusBadRequest, "register.html", gin.H{"error": fmt.Sprintf("The username \"%s\" is reserved", user.Name)})
 			return
 		}
+
+		db := manager.DBEngine()
 
 		tx := db.Begin()
 		code, err := registerTx(c, tx, &user)
@@ -125,7 +128,7 @@ type registerRequest struct {
 }
 
 // RegisterV2 take the account and password to create a new user
-func RegisterV2(db *model.DBEngine) gin.HandlerFunc {
+func RegisterV2(manager *service_manager.ServiceManager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		contentType := c.GetHeader("Content-Type")
 		switch contentType {
@@ -143,7 +146,7 @@ func RegisterV2(db *model.DBEngine) gin.HandlerFunc {
 				c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("The username \"%s\" is reserved", req.UserName)})
 				return
 			}
-
+			db := manager.DBEngine()
 			err := db.Transaction(func(tx *gorm.DB) error {
 				var existedUser model.User
 

@@ -3,7 +3,7 @@ package router
 import (
 	"fmt"
 	"github.com/adlternative/tinygithub/pkg/config"
-	"github.com/adlternative/tinygithub/pkg/model"
+	"github.com/adlternative/tinygithub/pkg/manager"
 	"github.com/adlternative/tinygithub/pkg/service/auth"
 	"github.com/adlternative/tinygithub/pkg/service/blob"
 	"github.com/adlternative/tinygithub/pkg/service/branches"
@@ -13,7 +13,6 @@ import (
 	"github.com/adlternative/tinygithub/pkg/service/tags"
 	"github.com/adlternative/tinygithub/pkg/service/tree"
 	"github.com/adlternative/tinygithub/pkg/service/user"
-	"github.com/adlternative/tinygithub/pkg/storage"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
@@ -65,7 +64,7 @@ func isDirectory(path string) bool {
 	return info.IsDir()
 }
 
-func Run(store *storage.Storage, dbEngine *model.DBEngine) error {
+func Run(manager *service_manager.ServiceManager) error {
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.New()
 
@@ -87,7 +86,7 @@ func Run(store *storage.Storage, dbEngine *model.DBEngine) error {
 			c.HTML(http.StatusNotFound, "404.html", nil)
 		})
 
-		r.GET("/", home.Page(dbEngine))
+		r.GET("/", home.Page(manager))
 
 		htmlTemplatePath := viper.GetString(config.HtmlTemplatePath)
 
@@ -111,13 +110,13 @@ func Run(store *storage.Storage, dbEngine *model.DBEngine) error {
 			registerGroup := authGroup.Group("/register")
 			{
 				registerGroup.GET("", auth.RegisterPage)
-				registerGroup.POST("", auth.Register(dbEngine))
+				registerGroup.POST("", auth.Register(manager))
 			}
 
 			loginGroup := authGroup.Group("/login")
 			{
 				loginGroup.GET("", auth.LoginPage)
-				loginGroup.POST("", auth.Login(dbEngine))
+				loginGroup.POST("", auth.Login(manager))
 			}
 
 			authGroup.GET("/logout", auth.Logout)
@@ -125,31 +124,31 @@ func Run(store *storage.Storage, dbEngine *model.DBEngine) error {
 
 		gitRepoGroup := r.Group("/:username/:reponame")
 		{
-			gitRepoGroup.GET("", repo.Home(dbEngine, store))
-			gitRepoGroup.GET("/tree/*treepath", repo.Home(dbEngine, store))
-			gitRepoGroup.GET("/blob/*blobpath", blob.Show(dbEngine, store))
+			gitRepoGroup.GET("", repo.Home(manager))
+			gitRepoGroup.GET("/tree/*treepath", repo.Home(manager))
+			gitRepoGroup.GET("/blob/*blobpath", blob.Show(manager))
 
-			gitRepoGroup.GET("/info/refs", pack.InfoRefs(store))
-			gitRepoGroup.POST("/git-upload-pack", pack.UploadPack(store))
-			gitRepoGroup.POST("/git-receive-pack", pack.ReceivePack(store))
+			gitRepoGroup.GET("/info/refs", pack.InfoRefs(manager))
+			gitRepoGroup.POST("/git-upload-pack", pack.UploadPack(manager))
+			gitRepoGroup.POST("/git-receive-pack", pack.ReceivePack(manager))
 		}
 
-		r.GET("/:username", user.Home(dbEngine))
+		r.GET("/:username", user.Home(manager))
 
 		repoGroup := r.Group("/repos")
 		{
 			repoGroup.GET("/new", repo.CreatePage)
-			repoGroup.POST("/new", repo.Create(dbEngine, store))
-			repoGroup.POST("/delete", repo.Delete(dbEngine, store))
+			repoGroup.POST("/new", repo.Create(manager))
+			repoGroup.POST("/delete", repo.Delete(manager))
 
-			//repoGroup.Get("/:id", repo.Get(dbEngine))
+			//repoGroup.Get("/:id", repo.Get(manager))
 		}
 	} else {
 		gitRepoGroup := r.Group("/:username/:reponame")
 		{
-			gitRepoGroup.GET("/info/refs", pack.InfoRefs(store))
-			gitRepoGroup.POST("/git-upload-pack", pack.UploadPack(store))
-			gitRepoGroup.POST("/git-receive-pack", pack.ReceivePack(store))
+			gitRepoGroup.GET("/info/refs", pack.InfoRefs(manager))
+			gitRepoGroup.POST("/git-upload-pack", pack.UploadPack(manager))
+			gitRepoGroup.POST("/git-receive-pack", pack.ReceivePack(manager))
 		}
 
 		apiGroup := r.Group("/api")
@@ -158,48 +157,48 @@ func Run(store *storage.Storage, dbEngine *model.DBEngine) error {
 			{
 				v2AuthGroup := v2Group.Group("/auth")
 				{
-					v2AuthGroup.POST("/login", auth.LoginV2(dbEngine))
-					v2AuthGroup.POST("/register", auth.RegisterV2(dbEngine))
-					v2AuthGroup.GET("/logout", auth.LogoutV2(dbEngine))
+					v2AuthGroup.POST("/login", auth.LoginV2(manager))
+					v2AuthGroup.POST("/register", auth.RegisterV2(manager))
+					v2AuthGroup.GET("/logout", auth.LogoutV2(manager))
 
 				}
 				v2UserGroup := v2Group.Group("/users")
 				{
-					v2UserGroup.GET("/current", user.CurrentUserInfo(dbEngine))
+					v2UserGroup.GET("/current", user.CurrentUserInfo(manager))
 
 					v2UserNameGroup := v2UserGroup.Group("/:username")
 					{
-						v2UserNameGroup.GET("", user.UserInfoV2(dbEngine))
+						v2UserNameGroup.GET("", user.UserInfoV2(manager))
 					}
 				}
 
 				v2ReposGroup := v2Group.Group("/repos")
 				{
-					v2ReposGroup.POST("/new", repo.CreateV2(dbEngine, store))
-					v2ReposGroup.POST("/delete", repo.DeleteV2(dbEngine, store))
+					v2ReposGroup.POST("/new", repo.CreateV2(manager))
+					v2ReposGroup.POST("/delete", repo.DeleteV2(manager))
 				}
 
 				v2UserNameGroup := v2Group.Group("/:username")
 				{
 					v2RepoGroup := v2UserNameGroup.Group("/:reponame")
 					{
-						v2RepoGroup.GET("", repo.ShowRepo(dbEngine, store))
+						v2RepoGroup.GET("", repo.ShowRepo(manager))
 
 						branchesGroup := v2RepoGroup.Group("/branches")
 						{
-							branchesGroup.GET("", branches.Show(dbEngine, store))
+							branchesGroup.GET("", branches.Show(manager))
 						}
 						tagsGroup := v2RepoGroup.Group("/tags")
 						{
-							tagsGroup.GET("", tags.Show(dbEngine, store))
+							tagsGroup.GET("", tags.Show(manager))
 						}
 						treeGroup := v2RepoGroup.Group("/tree")
 						{
-							treeGroup.GET("", tree.Show(dbEngine, store))
+							treeGroup.GET("", tree.Show(manager))
 						}
 						blobGroup := v2RepoGroup.Group("/blob")
 						{
-							blobGroup.GET("", blob.ShowV2(dbEngine, store))
+							blobGroup.GET("", blob.ShowV2(manager))
 						}
 					}
 				}

@@ -3,8 +3,8 @@ package repo
 import (
 	"errors"
 	"fmt"
+	service_manager "github.com/adlternative/tinygithub/pkg/manager"
 	"github.com/adlternative/tinygithub/pkg/model"
-	"github.com/adlternative/tinygithub/pkg/storage"
 	"github.com/adlternative/tinygithub/pkg/utils"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -17,7 +17,7 @@ func CreatePage(c *gin.Context) {
 	c.HTML(http.StatusOK, "create_repo.html", nil)
 }
 
-func Create(db *model.DBEngine, store *storage.Storage) gin.HandlerFunc {
+func Create(manager *service_manager.ServiceManager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		repoName := c.PostForm("reponame")
@@ -34,7 +34,7 @@ func Create(db *model.DBEngine, store *storage.Storage) gin.HandlerFunc {
 			c.HTML(http.StatusUnauthorized, "401.html", nil)
 			return
 		}
-
+		db := manager.DBEngine()
 		tx := db.Begin()
 
 		// 判断仓库是否已经存在
@@ -50,6 +50,7 @@ func Create(db *model.DBEngine, store *storage.Storage) gin.HandlerFunc {
 		}
 
 		// git init
+		store := manager.Storage()
 		_, err := store.CreateRepository(c, userName, repoName)
 		if err != nil {
 			tx.Rollback()
@@ -112,7 +113,7 @@ func checkRequest(req *CreateRequest) error {
 
 var RepoAlreadyExistsError = errors.New("repo already exists")
 
-func CreateV2(db *model.DBEngine, store *storage.Storage) gin.HandlerFunc {
+func CreateV2(manager *service_manager.ServiceManager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req CreateRequest
 
@@ -140,6 +141,7 @@ func CreateV2(db *model.DBEngine, store *storage.Storage) gin.HandlerFunc {
 			return
 		}
 
+		db := manager.DBEngine()
 		err = db.Transaction(func(tx *gorm.DB) error {
 			var user model.User
 			user.ID = userID
@@ -158,6 +160,8 @@ func CreateV2(db *model.DBEngine, store *storage.Storage) gin.HandlerFunc {
 				return RepoAlreadyExistsError
 			}
 			// git init
+
+			store := manager.Storage()
 			_, err := store.CreateRepository(c, userName, req.RepoName)
 			if err != nil {
 				log.WithError(err).Errorf("store CreateRepository failed")

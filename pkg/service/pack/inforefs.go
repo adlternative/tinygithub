@@ -3,7 +3,7 @@ package pack
 import (
 	"fmt"
 	"github.com/adlternative/tinygithub/pkg/cmd"
-	"github.com/adlternative/tinygithub/pkg/storage"
+	service_manager "github.com/adlternative/tinygithub/pkg/manager"
 	"github.com/gin-gonic/gin"
 	"github.com/git-lfs/pktline"
 	log "github.com/sirupsen/logrus"
@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-func InfoRefs(storage *storage.Storage) gin.HandlerFunc {
+func InfoRefs(manager *service_manager.ServiceManager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userName := c.Param("username")
 		// check user exist
@@ -23,6 +23,7 @@ func InfoRefs(storage *storage.Storage) gin.HandlerFunc {
 		c.Writer.Header().Set("Content-Type", fmt.Sprintf("application/x-%s-advertisement", serviceName))
 		c.Writer.Header().Set("Cache-Control", "no-cache")
 
+		storage := manager.Storage()
 		repo, err := storage.GetRepository(userName, repoName)
 		if err != nil {
 			log.WithError(err).Errorf("GetRepository failed")

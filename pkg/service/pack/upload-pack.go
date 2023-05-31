@@ -4,21 +4,22 @@ import (
 	"compress/gzip"
 	"fmt"
 	"github.com/adlternative/tinygithub/pkg/cmd"
+	service_manager "github.com/adlternative/tinygithub/pkg/manager"
 	log "github.com/sirupsen/logrus"
 	"io"
 	"net/http"
 	"strings"
 
-	"github.com/adlternative/tinygithub/pkg/storage"
 	"github.com/gin-gonic/gin"
 )
 
-func UploadPack(storage *storage.Storage) gin.HandlerFunc {
+func UploadPack(manager *service_manager.ServiceManager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		serviceName := "upload-pack"
 		userName := c.Param("username")
 		repoName := strings.TrimSuffix(c.Param("reponame"), ".git")
 
+		storage := manager.Storage()
 		repo, err := storage.GetRepository(userName, repoName)
 		if err != nil {
 			log.WithError(err).Errorf("GetRepository failed")

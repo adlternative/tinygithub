@@ -5,8 +5,8 @@ import (
 	"github.com/adlternative/tinygithub/pkg/config"
 	gitRepo "github.com/adlternative/tinygithub/pkg/git/repo"
 	"github.com/adlternative/tinygithub/pkg/git/tree"
+	service_manager "github.com/adlternative/tinygithub/pkg/manager"
 	"github.com/adlternative/tinygithub/pkg/model"
-	"github.com/adlternative/tinygithub/pkg/storage"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 	"gorm.io/gorm"
@@ -30,12 +30,13 @@ func ShowRepos(db *model.DBEngine) gin.HandlerFunc {
 	}
 }
 
-func ShowRepo(db *model.DBEngine, store *storage.Storage) gin.HandlerFunc {
+func ShowRepo(manager *service_manager.ServiceManager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userName := c.Param("username")
 		repoName := c.Param("reponame")
 
 		var user model.User
+		db := manager.DBEngine()
 		if err := db.Preload("Repositories", "name = ?", repoName).Where("name = ?", userName).First(&user).Error; err != nil {
 			c.JSON(http.StatusNotFound, gin.H{
 				"error": err.Error(),
@@ -54,8 +55,11 @@ func ShowRepo(db *model.DBEngine, store *storage.Storage) gin.HandlerFunc {
 	}
 }
 
-func Home(db *model.DBEngine, store *storage.Storage) gin.HandlerFunc {
+func Home(manager *service_manager.ServiceManager) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		db := manager.DBEngine()
+		store := manager.Storage()
+
 		userName := c.Param("username")
 		repoName := strings.TrimSuffix(c.Param("reponame"), ".git")
 		treePath := c.Param("treepath")

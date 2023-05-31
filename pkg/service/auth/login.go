@@ -1,6 +1,7 @@
 package auth
 
 import (
+	service_manager "github.com/adlternative/tinygithub/pkg/manager"
 	"github.com/adlternative/tinygithub/pkg/model"
 	"github.com/adlternative/tinygithub/pkg/service/auth/cryto"
 	"github.com/gin-contrib/sessions"
@@ -14,7 +15,7 @@ func LoginPage(c *gin.Context) {
 }
 
 // Login check if user's name, email exists and password right
-func Login(db *model.DBEngine) gin.HandlerFunc {
+func Login(manager *service_manager.ServiceManager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var user model.User
 
@@ -23,7 +24,7 @@ func Login(db *model.DBEngine) gin.HandlerFunc {
 			c.HTML(http.StatusBadRequest, "login.html", gin.H{"error": "invalid account"})
 			return
 		}
-
+		db := manager.DBEngine()
 		db.Where("name = ? OR email = ?", account, account).First(&user)
 		if user.ID == 0 {
 			c.HTML(http.StatusBadRequest, "login.html", gin.H{"error": "invalid username or email"})
@@ -65,7 +66,7 @@ type loginRequest struct {
 }
 
 // LoginV2 check if user's name, email exists and password right
-func LoginV2(db *model.DBEngine) gin.HandlerFunc {
+func LoginV2(manager *service_manager.ServiceManager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		contentType := c.GetHeader("Content-Type")
 		switch contentType {
@@ -82,7 +83,7 @@ func LoginV2(db *model.DBEngine) gin.HandlerFunc {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "invalid account"})
 				return
 			}
-
+			db := manager.DBEngine()
 			db.Where("name = ? OR email = ?", req.Account, req.Account).First(&user)
 			if user.ID == 0 {
 				c.JSON(http.StatusNotFound, gin.H{"error": "invalid username or email"})

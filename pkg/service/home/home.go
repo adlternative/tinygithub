@@ -1,13 +1,14 @@
 package home
 
 import (
+	service_manager "github.com/adlternative/tinygithub/pkg/manager"
 	"github.com/adlternative/tinygithub/pkg/model"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
-func Page(db *model.DBEngine) gin.HandlerFunc {
+func Page(manager *service_manager.ServiceManager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var user model.User
 
@@ -21,6 +22,7 @@ func Page(db *model.DBEngine) gin.HandlerFunc {
 		userName, ok1 := session.Get("username").(string)
 		userID, ok2 := session.Get("user_id").(uint)
 
+		db := manager.DBEngine()
 		if ok1 && ok2 && db.Where("name = ? AND id = ?", userName, userID).First(&user).Error == nil {
 			c.Redirect(http.StatusFound, "/"+userName)
 			return

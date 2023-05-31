@@ -4,15 +4,15 @@ import (
 	"fmt"
 	gitRepo "github.com/adlternative/tinygithub/pkg/git/repo"
 	"github.com/adlternative/tinygithub/pkg/git/tree"
+	service_manager "github.com/adlternative/tinygithub/pkg/manager"
 	"github.com/adlternative/tinygithub/pkg/model"
-	"github.com/adlternative/tinygithub/pkg/storage"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"net/http"
 	"strings"
 )
 
-func Show(db *model.DBEngine, store *storage.Storage) gin.HandlerFunc {
+func Show(manager *service_manager.ServiceManager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userName := c.Param("username")
 		repoName := c.Param("reponame")
@@ -32,6 +32,7 @@ func Show(db *model.DBEngine, store *storage.Storage) gin.HandlerFunc {
 		var user model.User
 		user.Name = userName
 
+		db := manager.DBEngine()
 		if err := db.Where("name = ?", userName).Preload("Repositories", "name = ?", repoName).First(&user).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
 				c.JSON(http.StatusNotFound, gin.H{
@@ -53,6 +54,7 @@ func Show(db *model.DBEngine, store *storage.Storage) gin.HandlerFunc {
 			return
 		}
 
+		store := manager.Storage()
 		repo, err := store.GetRepository(userName, repoName)
 		if err != nil {
 			c.JSON(http.StatusNotFound, gin.H{

@@ -1,6 +1,7 @@
 package user
 
 import (
+	service_manager "github.com/adlternative/tinygithub/pkg/manager"
 	"github.com/adlternative/tinygithub/pkg/model"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -8,12 +9,14 @@ import (
 )
 
 // Home user's home page
-func Home(db *model.DBEngine) gin.HandlerFunc {
+func Home(manager *service_manager.ServiceManager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		// url
 		userName := c.Param("username")
 		var user model.User
+
+		db := manager.DBEngine()
 		if err := db.Preload("Repositories").Where("name = ?", userName).First(&user).Error; err != nil {
 			c.HTML(http.StatusNotFound, "404.html", nil)
 			return
@@ -36,9 +39,11 @@ func Home(db *model.DBEngine) gin.HandlerFunc {
 }
 
 // UserInfoV2 show user information
-func UserInfoV2(db *model.DBEngine) gin.HandlerFunc {
+func UserInfoV2(manager *service_manager.ServiceManager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var user model.User
+		db := manager.DBEngine()
+
 		userName := c.Param("username")
 		tab := c.Query("tab")
 		if tab == "repositories" {
@@ -67,7 +72,7 @@ func UserInfoV2(db *model.DBEngine) gin.HandlerFunc {
 	}
 }
 
-func CurrentUserInfo(db *model.DBEngine) gin.HandlerFunc {
+func CurrentUserInfo(manager *service_manager.ServiceManager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		session := sessions.Default(c)
 
@@ -81,6 +86,7 @@ func CurrentUserInfo(db *model.DBEngine) gin.HandlerFunc {
 		user.Name = userName
 		user.ID = userID
 
+		db := manager.DBEngine()
 		if err := db.First(&user).Error; err != nil {
 			c.JSON(http.StatusNotFound, gin.H{"error": "not such user in the server"})
 			return

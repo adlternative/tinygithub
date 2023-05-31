@@ -1,6 +1,7 @@
 package auth
 
 import (
+	service_manager "github.com/adlternative/tinygithub/pkg/manager"
 	"github.com/adlternative/tinygithub/pkg/model"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -23,7 +24,7 @@ func Logout(c *gin.Context) {
 }
 
 // LogoutV2 do user exit
-func LogoutV2(db *model.DBEngine) gin.HandlerFunc {
+func LogoutV2(manager *service_manager.ServiceManager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		session := sessions.Default(c)
 		userName, ok1 := session.Get("username").(string)
@@ -37,6 +38,7 @@ func LogoutV2(db *model.DBEngine) gin.HandlerFunc {
 		user.Name = userName
 		user.ID = userID
 
+		db := manager.DBEngine()
 		if err := db.First(&user).Error; err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "The information of your session may be incorrect"})
 			return

@@ -3,18 +3,19 @@ package branches
 import (
 	"fmt"
 	"github.com/adlternative/tinygithub/pkg/git/branches"
+	service_manager "github.com/adlternative/tinygithub/pkg/manager"
 	"github.com/adlternative/tinygithub/pkg/model"
-	"github.com/adlternative/tinygithub/pkg/storage"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
-func Show(db *model.DBEngine, store *storage.Storage) gin.HandlerFunc {
+func Show(manager *service_manager.ServiceManager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userName := c.Param("username")
 		repoName := c.Param("reponame")
 
 		var user model.User
+		db := manager.DBEngine()
 		if err := db.Preload("Repositories", "name = ?", repoName).Where("name = ?", userName).First(&user).Error; err != nil {
 			c.JSON(http.StatusNotFound, gin.H{
 				"error": err.Error(),
@@ -28,6 +29,7 @@ func Show(db *model.DBEngine, store *storage.Storage) gin.HandlerFunc {
 			return
 		}
 
+		store := manager.Storage()
 		repo, err := store.GetRepository(userName, repoName)
 		if err != nil {
 			c.JSON(http.StatusNotFound, gin.H{

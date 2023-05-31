@@ -2,6 +2,7 @@ package tinygithub
 
 import (
 	"github.com/adlternative/tinygithub/pkg/config"
+	service_manager "github.com/adlternative/tinygithub/pkg/manager"
 	"github.com/adlternative/tinygithub/pkg/model"
 	"github.com/adlternative/tinygithub/pkg/router"
 	"github.com/adlternative/tinygithub/pkg/storage"
@@ -25,5 +26,7 @@ func Run() error {
 		return err
 	}
 
-	return router.Run(store, dbEngine)
+	manager := service_manager.New().WithStorage(store).WithDBEngine(dbEngine)
+
+	return router.Run(manager)
 }
