@@ -4,9 +4,11 @@ FROM golang:latest
 # 设置工作目录
 WORKDIR /tinygithub
 
+ENV PATH=$PATH:/usr/local/go/bin:/go/bin
+
 COPY . .
 
 RUN go env -w GOPROXY=https://goproxy.cn,direct && go install
 
-ENTRYPOINT ["/go/bin/tinygithub"]
+ENTRYPOINT ["tinygithub"]
 CMD [ "server"]

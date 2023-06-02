@@ -4,6 +4,7 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"fmt"
 	"github.com/adlternative/tinygithub/pkg"
 	"github.com/adlternative/tinygithub/pkg/config"
 	log "github.com/sirupsen/logrus"
@@ -11,15 +12,21 @@ import (
 	"github.com/spf13/viper"
 )
 
+var configFile string
+
 // serverCmd represents the server command
 var serverCmd = &cobra.Command{
 	Use:   "server",
 	Short: "tinygithub http server",
 	Long:  `support tinygithub http service`,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
+		config.Init(configFile)
+
 		if err := tinygithub.Run(); err != nil {
-			log.Fatalf("tinygithub server failed with: %v", err)
+			return fmt.Errorf("tinygithub run failed with: %w", err)
 		}
+
+		return nil
 	},
 }
 
@@ -43,6 +50,10 @@ func init() {
 	serverCmd.PersistentFlags().String(config.StaticResourcePath, "./static", "static resource path")
 	serverCmd.PersistentFlags().String(config.HtmlTemplatePath, "./pkg/template/*", "html template path")
 	serverCmd.PersistentFlags().String(config.APIVersion, "v2", "api version")
+	serverCmd.PersistentFlags().String(config.LogLevel, "info", "log level")
+	serverCmd.PersistentFlags().String(config.LogFile, "", "log file")
+	serverCmd.PersistentFlags().String(config.GitBinPath, "/usr/bin/git", "git bin path")
+	serverCmd.PersistentFlags().StringVar(&configFile, "config", "config.json", "config file")
 
 	if err := viper.BindPFlags(serverCmd.PersistentFlags()); err != nil {
 		log.Fatalf("viper bind serverCmd flags failed with %v", err)

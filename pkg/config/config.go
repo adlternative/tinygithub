@@ -4,6 +4,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"os"
+	"strings"
 )
 
 const (
@@ -29,6 +30,19 @@ const (
 
 	APIVersion = "api-version"
 )
+
+func Init(configFile string) {
+	viper.SetConfigFile(configFile)
+	viper.AutomaticEnv()
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_", "-", "_"))
+
+	if err := viper.ReadInConfig(); err != nil {
+		log.Info("no config file specified")
+	}
+
+	InitLog()
+	InitGitBinPath()
+}
 
 func InitLog() {
 	if level := viper.GetString(LogLevel); level != "" {

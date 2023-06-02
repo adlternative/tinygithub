@@ -144,6 +144,11 @@ func Run(manager *service_manager.ServiceManager) error {
 			//repoGroup.Get("/:id", repo.Get(manager))
 		}
 	} else {
+		internalGroup := r.Group("/internal")
+		{
+			internalGroup.POST("/post-receive", pack.PostReceive(manager))
+		}
+
 		apiGroup := r.Group("/api")
 		{
 			v2Group := apiGroup.Group("/v2")

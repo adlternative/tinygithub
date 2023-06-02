@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/adlternative/tinygithub/pkg/cmd"
@@ -16,18 +17,66 @@ import (
 	"github.com/spf13/viper"
 )
 
+const PostReceiveHookContent = `
+#!/bin/bash
+
+while read oldrev newrev refname
+do
+    # Pass all the arguments to tinygithub hook --post-receive
+    tinygithub hook --post-receive "$oldrev" "$newrev" "$refname"
+done
+`
+
 type Storage struct {
-	path string
+	path             string
+	templateRepoPath string
 }
 
 func NewStorage() (*Storage, error) {
+	storagePath := viper.GetString(config.Storage)
 	s := &Storage{
-		path: viper.GetString(config.Storage),
+		path:             storagePath,
+		templateRepoPath: path.Join(storagePath, ".template.git"),
 	}
+
 	if err := s.valid(); err != nil {
 		return nil, err
 	}
+	if err := s.createTemplate(context.TODO()); err != nil {
+		return nil, fmt.Errorf("create template repository failed with: %w", err)
+	}
 	return s, nil
+}
+
+func (s *Storage) createTemplate(ctx context.Context) error {
+	// creat template repository
+	_, err := os.Stat(s.templateRepoPath)
+	if err == nil {
+		return nil
+	}
+	var pathError *fs.PathError
+	if err != os.ErrNotExist && !errors.As(err, &pathError) {
+		return err
+	}
+
+	var stderrBuf strings.Builder
+	gitCmd := cmd.NewGitCommand("init").WithGitDir(s.templateRepoPath).
+		WithOptions("--bare").WithStderr(&stderrBuf)
+	err = gitCmd.Run(ctx)
+	if err != nil {
+		log.WithError(err).Errorf("git command failed with: Error:%v, stderr:%v", err, stderrBuf.String())
+		return err
+	}
+
+	// creat post-receive hook
+	filename := path.Join(s.templateRepoPath, "hooks", "post-receive")
+	err = os.WriteFile(filename, []byte(PostReceiveHookContent), 0755)
+	if err != nil {
+		log.WithError(err).Errorf("write post-receive hook failed with: Error:%v, stderr:%v", err, stderrBuf.String())
+		return err
+	}
+
+	return nil
 }
 
 func (s *Storage) Path() string {
@@ -86,7 +135,9 @@ func (s *Storage) CreateRepository(ctx *gin.Context, userName, repoName string) 
 	var stderrBuf strings.Builder
 
 	gitCmd := cmd.NewGitCommand("init").WithGitDir(repoPath).
-		WithOptions("--bare").WithStderr(&stderrBuf)
+		WithOptions("--bare").
+		WithOptions(fmt.Sprintf("--template=%s", s.templateRepoPath)).
+		WithStderr(&stderrBuf)
 	err = gitCmd.Run(ctx)
 	if err != nil {
 		log.WithError(err).Errorf("git command failed with: Error:%v, stderr:%v", err, stderrBuf.String())
