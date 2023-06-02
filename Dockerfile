@@ -4,12 +4,9 @@ FROM golang:latest
 # 设置工作目录
 WORKDIR /tinygithub
 
-# 更新系统并安装 Git
-RUN apt-get update && apt-get install -y git
-
 COPY . .
 
-RUN go install
+RUN go env -w GOPROXY=https://goproxy.cn,direct && go install
 
 ENTRYPOINT ["/go/bin/tinygithub"]
 CMD [ "server"]
