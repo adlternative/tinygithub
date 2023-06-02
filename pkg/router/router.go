@@ -144,13 +144,6 @@ func Run(manager *service_manager.ServiceManager) error {
 			//repoGroup.Get("/:id", repo.Get(manager))
 		}
 	} else {
-		gitRepoGroup := r.Group("/:username/:reponame")
-		{
-			gitRepoGroup.GET("/info/refs", pack.InfoRefs(manager))
-			gitRepoGroup.POST("/git-upload-pack", pack.UploadPack(manager))
-			gitRepoGroup.POST("/git-receive-pack", pack.ReceivePack(manager))
-		}
-
 		apiGroup := r.Group("/api")
 		{
 			v2Group := apiGroup.Group("/v2")
@@ -183,6 +176,10 @@ func Run(manager *service_manager.ServiceManager) error {
 					v2RepoGroup := v2UserNameGroup.Group("/:reponame")
 					{
 						v2RepoGroup.GET("", repo.ShowRepo(manager))
+
+						v2RepoGroup.GET("/info/refs", pack.InfoRefs(manager))
+						v2RepoGroup.POST("/git-upload-pack", pack.UploadPack(manager))
+						v2RepoGroup.POST("/git-receive-pack", pack.ReceivePack(manager))
 
 						branchesGroup := v2RepoGroup.Group("/branches")
 						{
