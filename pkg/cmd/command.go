@@ -7,6 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"io"
+	"os"
 	"os/exec"
 )
 
@@ -119,6 +120,7 @@ func (c *Command) Start(ctx context.Context) error {
 		c.internalStdin = stdinPipe
 	}
 	if len(c.envs) > 0 {
+		c.cmd.Env = append(c.cmd.Env, os.Environ()...)
 		c.cmd.Env = append(c.cmd.Env, c.envs...)
 	}
 
