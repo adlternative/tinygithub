@@ -4,15 +4,16 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	hook_config "github.com/adlternative/tinygithub/pkg/config/hook"
 	"github.com/adlternative/tinygithub/pkg/service/protocol"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"net/http"
 	"os"
 )
 
-var (
-	postReceive bool
-)
+//var hookConfigFile string
 
 // hookCmd represents the hook command
 var hookCmd = &cobra.Command{
@@ -20,8 +21,19 @@ var hookCmd = &cobra.Command{
 	Short: "transport git hook to server",
 	Long:  `http client, transport git hook to server hook api`,
 	Args:  cobra.ExactArgs(3),
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		if err := viper.BindPFlags(cmd.PersistentFlags()); err != nil {
+			return fmt.Errorf("viper bind hookCmd flags failed with %w", err)
+		}
+		return nil
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if !postReceive {
+		err := hook_config.Init()
+		if err != nil {
+			return fmt.Errorf("server hook config init failed: %v", err)
+		}
+
+		if !viper.GetBool(hook_config.PostReceiveMode) {
 			return fmt.Errorf("only support post-receive hook now")
 		}
 
@@ -30,6 +42,10 @@ var hookCmd = &cobra.Command{
 			OldOid:  args[0],
 			NewOid:  args[1],
 			RefName: args[2],
+			Repositry: &protocol.Repository{
+				UserName: viper.GetString(hook_config.UserName),
+				RepoName: viper.GetString(hook_config.RepoName),
+			},
 		}
 
 		// 将参数转换为JSON格式
@@ -39,7 +55,8 @@ var hookCmd = &cobra.Command{
 		}
 
 		// 创建HTTP请求
-		req, err := http.NewRequest("POST", "http://localhost:8083/internal/post-receive", bytes.NewBuffer(jsonData))
+		url := fmt.Sprintf("http://%s:%s/internal/post-receive", viper.GetString(hook_config.ServerIp), viper.GetString(hook_config.ServerPort))
+		req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
 		if err != nil {
 			return fmt.Errorf("failed to create HTTP request: %w", err)
 		}
@@ -63,7 +80,7 @@ var hookCmd = &cobra.Command{
 			if err != nil {
 				return fmt.Errorf("failed to decode JSON data: %v", err)
 			}
-			fmt.Printf(postReceiveResponse.Message)
+			log.Info(postReceiveResponse.Message)
 		default:
 			postReceiveError := &protocol.PostReceiveError{}
 			err = json.NewDecoder(resp.Body).Decode(&postReceiveError)
@@ -77,6 +94,13 @@ var hookCmd = &cobra.Command{
 }
 
 func init() {
-	hookCmd.PersistentFlags().BoolVar(&postReceive, "post-receive", false, "run post-receive hook")
 	rootCmd.AddCommand(hookCmd)
+
+	hookCmd.PersistentFlags().Bool(hook_config.PostReceiveMode, false, "run post-receive hook")
+	hookCmd.PersistentFlags().String(hook_config.ServerIp, "localhost", "server ip")
+	hookCmd.PersistentFlags().String(hook_config.ServerPort, "8083", "server port")
+	hookCmd.PersistentFlags().String(hook_config.LogLevel, "info", "log level")
+	hookCmd.PersistentFlags().String(hook_config.LogFile, "~/.tinygithub/hook/hook.log", "log file")
+	hookCmd.PersistentFlags().String(hook_config.UserName, "", "user name")
+	hookCmd.PersistentFlags().String(hook_config.RepoName, "", "repo name")
 }

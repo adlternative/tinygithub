@@ -1,6 +1,7 @@
 package pack
 
 import (
+	"encoding/json"
 	"fmt"
 	service_manager "github.com/adlternative/tinygithub/pkg/manager"
 	"github.com/adlternative/tinygithub/pkg/service/protocol"
@@ -30,7 +31,8 @@ func PostReceive(manager *service_manager.ServiceManager) gin.HandlerFunc {
 			return
 		}
 
-		log.Println("Received data:", req)
-		c.JSON(http.StatusOK, &protocol.PostReceiveResponse{Message: "Data received"})
+		testData, _ := json.Marshal(req)
+		log.Debug("Received data:", string(testData))
+		c.JSON(http.StatusOK, &protocol.PostReceiveResponse{Message: "post-receive hook success"})
 	}
 }

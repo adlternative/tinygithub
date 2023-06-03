@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"github.com/adlternative/tinygithub/pkg"
 	"github.com/adlternative/tinygithub/pkg/config"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -19,6 +18,12 @@ var serverCmd = &cobra.Command{
 	Use:   "server",
 	Short: "tinygithub http server",
 	Long:  `support tinygithub http service`,
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		if err := viper.BindPFlags(cmd.PersistentFlags()); err != nil {
+			return fmt.Errorf("viper bind hookCmd flags failed with %w", err)
+		}
+		return nil
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		config.Init(configFile)
 
@@ -54,8 +59,4 @@ func init() {
 	serverCmd.PersistentFlags().String(config.LogFile, "", "log file")
 	serverCmd.PersistentFlags().String(config.GitBinPath, "/usr/bin/git", "git bin path")
 	serverCmd.PersistentFlags().StringVar(&configFile, "config", "config.json", "config file")
-
-	if err := viper.BindPFlags(serverCmd.PersistentFlags()); err != nil {
-		log.Fatalf("viper bind serverCmd flags failed with %v", err)
-	}
 }

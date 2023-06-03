@@ -6,6 +6,7 @@ require (
 	github.com/gin-contrib/sessions v0.0.5
 	github.com/gin-gonic/gin v1.9.0
 	github.com/git-lfs/pktline v0.0.0-20230103162542-ca444d533ef1
+	github.com/mitchellh/go-homedir v1.1.0
 	github.com/onrik/gorm-logrus v0.5.0
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/cobra v1.7.0
