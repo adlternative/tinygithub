@@ -78,7 +78,7 @@ func (db *DBEngine) Run() error {
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", db.userName, db.passWord, db.ip, db.port, db.name)
 	database, err := gorm.Open(mysql.Open(dsn), &gorm.Config{Logger: gorm_logrus.New()})
 	if err != nil {
-		return err
+		return fmt.Errorf("database connect failed: %w", err)
 	}
 	db.DB = database
 	err = db.init()
