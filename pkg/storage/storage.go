@@ -84,10 +84,11 @@ func (s *Storage) Path() string {
 }
 
 func (s *Storage) GetRepository(userName, repoName string) (*Repo, error) {
-	if !strings.HasSuffix(repoName, ".git") {
-		repoName = repoName + ".git"
+	repoNameWithGitSuffix := repoName
+	if !strings.HasSuffix(repoNameWithGitSuffix, ".git") {
+		repoNameWithGitSuffix = repoNameWithGitSuffix + ".git"
 	}
-	repoPath := path.Clean(path.Join(s.path, userName, repoName))
+	repoPath := path.Clean(path.Join(s.path, userName, repoNameWithGitSuffix))
 	info, err := os.Stat(repoPath)
 	if err != nil {
 		return nil, err
@@ -95,7 +96,7 @@ func (s *Storage) GetRepository(userName, repoName string) (*Repo, error) {
 	if !info.IsDir() {
 		return nil, fmt.Errorf("repoPath %s is not a dir", repoPath)
 	}
-	return NewRepository(repoPath), nil
+	return NewRepository(repoPath, userName, repoName), nil
 }
 
 func (s *Storage) valid() error {
@@ -114,11 +115,13 @@ func (s *Storage) valid() error {
 }
 
 func (s *Storage) CreateRepository(ctx *gin.Context, userName, repoName string) (*Repo, error) {
-	if !strings.HasSuffix(repoName, ".git") {
-		repoName = repoName + ".git"
+	repoNameWithGitSuffix := repoName
+	if !strings.HasSuffix(repoNameWithGitSuffix, ".git") {
+		repoNameWithGitSuffix = repoNameWithGitSuffix + ".git"
 	}
+
 	userDir := path.Clean(path.Join(s.path, userName))
-	repoPath := path.Clean(path.Join(userDir, repoName))
+	repoPath := path.Clean(path.Join(userDir, repoNameWithGitSuffix))
 
 	var pathErr *fs.PathError
 	_, err := os.Stat(repoPath)
@@ -144,7 +147,7 @@ func (s *Storage) CreateRepository(ctx *gin.Context, userName, repoName string) 
 		return nil, err
 	}
 
-	return NewRepository(repoPath), nil
+	return NewRepository(repoPath, userName, repoName), nil
 }
 
 func (s *Storage) RemoveRepository(ctx *gin.Context, userName, repoName string) error {
