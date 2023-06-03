@@ -48,6 +48,8 @@ func ReceivePack(manager *service_manager.ServiceManager) gin.HandlerFunc {
 
 		gitCmd := cmd.NewGitCommand(serviceName).WithGitDir(repo.Path()).
 			WithOptions("--stateless-rpc").
+			WithEnv(fmt.Sprintf("USER_NAME=%s", repo.UserName())).
+			WithEnv(fmt.Sprintf("REPO_NAME=%s", repo.RepoName())).
 			WithArgs(repo.Path()).WithStderr(&stderrBuf).WithStdout(c.Writer).WithStdin(r)
 
 		if err = gitCmd.Run(c); err != nil {
